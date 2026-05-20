@@ -1,0 +1,132 @@
+{
+  "name": "example_phase2_collect",
+  "description": "Phase 2 示例：完整复现原 collect_auto.py 的等价流程。\n• 用 Excel 数据源遍历公司名\n• 用 find_image 检测页面状态\n• if/else 分支选择不同点击位置\n• 滚动+查找趋势图\n注意：运行前需在「模板库」标签创建对应的模板组（kexinbaike / chengli / trend_icon）。",
+  "version": "0.2",
+  "variables": {},
+  "settings": {
+    "short_pause_sec": 360,
+    "short_pause_every": 5,
+    "long_pause_sec": 1800,
+    "long_pause_every": 15,
+    "default_step_timeout": 10.0,
+    "failure_policy": "continue",
+    "retry_max": 2,
+    "record_merge_threshold_sec": 1.5,
+    "record_idle_to_wait_sec": 1.5
+  },
+  "templates": {},
+  "data_source": {
+    "type": "xlsx",
+    "path": "company_list.xlsx",
+    "sheet": null,
+    "column": "name",
+    "inline_items": null,
+    "start_index": 0,
+    "end_index": null,
+    "skip_empty": true,
+    "filter": null
+  },
+  "steps": [
+    {
+      "id": "s_paste",
+      "type": "paste",
+      "name": "粘贴公司名",
+      "enabled": true, "breakpoint": false,
+      "params": {"text": "${item}", "delay_after_copy": 0.1}
+    },
+    {
+      "id": "s_click_search_box",
+      "type": "click",
+      "name": "点击搜索框",
+      "enabled": true, "breakpoint": false,
+      "params": {"position": {"type":"fixed","x":690,"y":148}, "button":"left", "clicks":1}
+    },
+    {"id":"s_select_all","type":"hotkey","name":"全选","enabled":true,"breakpoint":false,
+     "params":{"keys":"ctrl+a"}},
+    {"id":"s_paste_box","type":"hotkey","name":"粘贴","enabled":true,"breakpoint":false,
+     "params":{"keys":"ctrl+v"}},
+    {"id":"s_click_search","type":"click","name":"点击查找","enabled":true,"breakpoint":false,
+     "params":{"position":{"type":"fixed","x":980,"y":152},"button":"left","clicks":1}},
+    {"id":"s_wait_results","type":"wait","name":"等结果","enabled":true,"breakpoint":false,
+     "params":{"mode":"fixed","seconds":5.0,"template":"","timeout":10.0,"poll_interval":0.5}},
+    {
+      "id": "s_check_kexin",
+      "type": "find_image",
+      "name": "检测可信百科页",
+      "enabled": true, "breakpoint": false,
+      "params": {"template": "kexinbaike", "region": [350,430,1200,450], "confidence": 0.5}
+    },
+    {
+      "id": "s_if_kexin",
+      "type": "if",
+      "name": "命中即跳过",
+      "enabled": true, "breakpoint": false,
+      "params": {
+        "condition": "found",
+        "then": [
+          {"id":"s_skip_log","type":"log","name":"跳过日志","enabled":true,"breakpoint":false,
+           "params":{"message":"${item} 命中可信百科, 跳过","level":"info"}},
+          {"id":"s_skip_continue","type":"continue","name":"跳到下一项","enabled":true,"breakpoint":false,
+           "params":{}}
+        ],
+        "else": []
+      }
+    },
+    {
+      "id": "s_check_position",
+      "type": "find_image",
+      "name": "检测成立年限位置",
+      "enabled": true, "breakpoint": false,
+      "params": {"template": "chengli", "region": [350,430,120,50], "confidence": 0.5}
+    },
+    {
+      "id": "s_if_position",
+      "type": "if",
+      "name": "选择点击位置",
+      "enabled": true, "breakpoint": false,
+      "params": {
+        "condition": "found",
+        "then": [
+          {"id":"s_click_alt","type":"click","name":"点备用位置","enabled":true,"breakpoint":false,
+           "params":{"position":{"type":"fixed","x":502,"y":688},"button":"left","clicks":1}}
+        ],
+        "else": [
+          {"id":"s_click_def","type":"click","name":"点默认位置","enabled":true,"breakpoint":false,
+           "params":{"position":{"type":"fixed","x":521,"y":563},"button":"left","clicks":1}}
+        ]
+      }
+    },
+    {"id":"s_wait_detail","type":"wait","name":"等详情页","enabled":true,"breakpoint":false,
+     "params":{"mode":"fixed","seconds":2.0,"template":"","timeout":10.0,"poll_interval":0.5}},
+    {"id":"s_scroll","type":"scroll","name":"向下滚动","enabled":true,"breakpoint":false,
+     "params":{"direction":"down","amount":700,"at_position":{"type":"fixed","x":980,"y":152}}},
+    {"id":"s_wait_scroll","type":"wait","name":"等滚动","enabled":true,"breakpoint":false,
+     "params":{"mode":"fixed","seconds":1.0,"template":"","timeout":10.0,"poll_interval":0.5}},
+    {
+      "id": "s_find_trend",
+      "type": "find_image",
+      "name": "查找趋势图标",
+      "enabled": true, "breakpoint": false,
+      "params": {"template": "trend_icon", "region": null, "confidence": 0.5}
+    },
+    {
+      "id": "s_if_trend",
+      "type": "if",
+      "name": "若找到则点击",
+      "enabled": true, "breakpoint": false,
+      "params": {
+        "condition": "found",
+        "then": [
+          {"id":"s_click_trend","type":"click","name":"点击趋势图","enabled":true,"breakpoint":false,
+           "params":{"position":{"type":"variable","var":"match_pos"},"button":"left","clicks":1}},
+          {"id":"s_log_hit","type":"log","name":"成功","enabled":true,"breakpoint":false,
+           "params":{"message":"${item} 趋势图已点击 @ ${match_pos}","level":"info"}}
+        ],
+        "else": [
+          {"id":"s_log_miss","type":"log","name":"未找到","enabled":true,"breakpoint":false,
+           "params":{"message":"${item} 未找到趋势图标","level":"warning"}}
+        ]
+      }
+    }
+  ]
+}

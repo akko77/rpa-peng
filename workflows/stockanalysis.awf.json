@@ -1,0 +1,128 @@
+{
+  "name": "stockanalysis",
+  "description": "",
+  "version": "0.2",
+  "variables": {},
+  "settings": {
+    "short_pause_sec": 360,
+    "short_pause_every": 5,
+    "long_pause_sec": 1800,
+    "long_pause_every": 15,
+    "default_step_timeout": 10.0,
+    "failure_policy": "continue",
+    "retry_max": 2,
+    "record_merge_threshold_sec": 1.5,
+    "record_idle_to_wait_sec": 1.5
+  },
+  "steps": [
+    {
+      "id": "s_5927cbf5",
+      "type": "find_image",
+      "name": "查找图片",
+      "enabled": true,
+      "breakpoint": false,
+      "params": {
+        "template": "deepseekgoogleicon",
+        "region": [
+          9,
+          6,
+          1793,
+          42
+        ],
+        "confidence": null
+      }
+    },
+    {
+      "id": "s_7dd0e8ae",
+      "type": "if",
+      "name": "条件分支",
+      "enabled": true,
+      "breakpoint": false,
+      "params": {
+        "condition": "found == False",
+        "then": [
+          {
+            "id": "s_cb812ef5",
+            "type": "click",
+            "name": "点击",
+            "enabled": true,
+            "breakpoint": false,
+            "params": {
+              "position": {
+                "type": "variable",
+                "var": "match_pos"
+              },
+              "button": "left",
+              "clicks": 1
+            }
+          },
+          {
+            "id": "s_347a8035",
+            "type": "find_image",
+            "name": "查找图片",
+            "enabled": true,
+            "breakpoint": false,
+            "params": {
+              "template": "googlechrome",
+              "region": [
+                5,
+                1034,
+                1592,
+                45
+              ],
+              "confidence": null
+            }
+          }
+        ],
+        "else": []
+      }
+    }
+  ],
+  "templates": {
+    "deepseekgoogleicon": {
+      "name": "deepseekgoogleicon",
+      "variants": [
+        {
+          "file": "v1.png",
+          "confidence": 0.7,
+          "added_at": "2026-05-20",
+          "note": ""
+        },
+        {
+          "file": "v2.png",
+          "confidence": 0.7,
+          "added_at": "2026-05-20",
+          "note": ""
+        }
+      ],
+      "default_region": [
+        754,
+        2,
+        233,
+        53
+      ],
+      "default_confidence": 0.7,
+      "match_strategy": "first_hit"
+    },
+    "googlechrome": {
+      "name": "googlechrome",
+      "variants": [
+        {
+          "file": "v1.png",
+          "confidence": 0.7,
+          "added_at": "2026-05-20",
+          "note": ""
+        }
+      ],
+      "default_region": [
+        324,
+        1039,
+        44,
+        33
+      ],
+      "default_confidence": 0.7,
+      "match_strategy": "first_hit"
+    }
+  },
+  "data_source": null
+}

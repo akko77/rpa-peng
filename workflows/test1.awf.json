@@ -1,0 +1,48 @@
+{
+  "name": "未命名工作流",
+  "description": "",
+  "version": "0.1",
+  "variables": {},
+  "settings": {
+    "short_pause_sec": 360,
+    "short_pause_every": 5,
+    "long_pause_sec": 1800,
+    "long_pause_every": 15,
+    "default_step_timeout": 10.0,
+    "failure_policy": "continue",
+    "retry_max": 2,
+    "record_merge_threshold_sec": 1.5,
+    "record_idle_to_wait_sec": 1.5
+  },
+  "steps": [
+    {
+      "id": "s_505a63dc",
+      "type": "log",
+      "name": "日志",
+      "enabled": true,
+      "breakpoint": false,
+      "params": {
+        "message": "123",
+        "level": "debug"
+      }
+    },
+    {
+      "id": "s_10527460",
+      "type": "click",
+      "name": "点击",
+      "enabled": true,
+      "breakpoint": false,
+      "params": {
+        "position": {
+          "type": "fixed",
+          "x": 477,
+          "y": 318
+        },
+        "button": "left",
+        "clicks": 1
+      }
+    }
+  ],
+  "templates": {},
+  "data_source": null
+}

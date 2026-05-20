@@ -1,0 +1,74 @@
+{
+  "name": "test2",
+  "description": "",
+  "version": "0.1",
+  "variables": {},
+  "settings": {
+    "short_pause_sec": 360,
+    "short_pause_every": 5,
+    "long_pause_sec": 1800,
+    "long_pause_every": 15,
+    "default_step_timeout": 10.0,
+    "failure_policy": "continue",
+    "retry_max": 2,
+    "record_merge_threshold_sec": 1.5,
+    "record_idle_to_wait_sec": 1.5
+  },
+  "steps": [
+    {
+      "id": "s_a5193223",
+      "type": "click",
+      "name": "点击",
+      "enabled": true,
+      "breakpoint": false,
+      "params": {
+        "position": {
+          "type": "fixed",
+          "x": 353,
+          "y": 1058
+        },
+        "button": "left",
+        "clicks": 1
+      }
+    },
+    {
+      "id": "s_7340bb33",
+      "type": "click",
+      "name": "点击",
+      "enabled": true,
+      "breakpoint": false,
+      "params": {
+        "position": {
+          "type": "fixed",
+          "x": 759,
+          "y": 911
+        },
+        "button": "left",
+        "clicks": 1
+      }
+    },
+    {
+      "id": "s_5bd3917e",
+      "type": "hotkey",
+      "name": "组合键",
+      "enabled": true,
+      "breakpoint": false,
+      "params": {
+        "keys": "ctrl+a"
+      }
+    },
+    {
+      "id": "s_bdb65c05",
+      "type": "type_text",
+      "name": "输入文本",
+      "enabled": true,
+      "breakpoint": false,
+      "params": {
+        "text": "123",
+        "interval": 0.5
+      }
+    }
+  ],
+  "templates": {},
+  "data_source": null
+}

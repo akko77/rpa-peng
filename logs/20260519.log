@@ -1,0 +1,12 @@
+2026-05-19 20:25:52,635 - INFO - __main__ - 启动 AutoWorkflow
+2026-05-19 20:26:20,201 - INFO - app.ui.main_window - 已新建空白工作流
+2026-05-19 20:30:33,128 - INFO - app.ui.main_window - 已另存为: D:/all_coding_test/RPA_web/code/workflows/test1.awf.json
+2026-05-19 20:31:25,505 - INFO - app.ui.main_window - 已另存为: D:/all_coding_test/RPA_web/code/workflows/test1.awf.json
+2026-05-19 20:34:03,685 - INFO - __main__ - 启动 AutoWorkflow
+2026-05-19 20:34:09,621 - INFO - app.ui.main_window - 已打开: D:/all_coding_test/RPA_web/code/workflows/test1.awf.json
+2026-05-19 20:57:40,377 - INFO - __main__ - 启动 AutoWorkflow
+2026-05-19 21:22:44,253 - INFO - __main__ - 启动 AutoWorkflow
+2026-05-19 21:23:45,689 - INFO - __main__ - 启动 AutoWorkflow
+2026-05-19 21:28:10,634 - INFO - app.ui.main_window - 已另存为: D:/all_coding_test/RPA_web/code/workflows/test2.awf.json
+2026-05-19 21:29:40,429 - INFO - __main__ - 启动 AutoWorkflow
+2026-05-19 21:29:46,444 - INFO - app.ui.main_window - 已打开: D:/all_coding_test/RPA_web/code/workflows/test2.awf.json

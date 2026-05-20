@@ -1,0 +1,90 @@
+{
+  "name": "example_search_flow",
+  "description": "示例：粘贴查询词 → 搜索 → 等待 → 日志记录。无 Excel/截图。Phase 1 可运行。",
+  "version": "0.1",
+  "variables": {
+    "query": "测试关键词"
+  },
+  "settings": {
+    "short_pause_sec": 360,
+    "short_pause_every": 5,
+    "long_pause_sec": 1800,
+    "long_pause_every": 15,
+    "default_step_timeout": 10.0,
+    "failure_policy": "continue",
+    "retry_max": 2,
+    "record_merge_threshold_sec": 1.5,
+    "record_idle_to_wait_sec": 1.5
+  },
+  "steps": [
+    {
+      "id": "s_paste",
+      "type": "paste",
+      "name": "粘贴查询词",
+      "enabled": true,
+      "breakpoint": false,
+      "params": {
+        "text": "${query}",
+        "delay_after_copy": 0.1
+      }
+    },
+    {
+      "id": "s_click_search_box",
+      "type": "click",
+      "name": "点击搜索框",
+      "enabled": true,
+      "breakpoint": false,
+      "params": {
+        "position": {"type": "fixed", "x": 690, "y": 148},
+        "button": "left",
+        "clicks": 1
+      }
+    },
+    {
+      "id": "s_select_all",
+      "type": "hotkey",
+      "name": "全选已有内容",
+      "enabled": true,
+      "breakpoint": false,
+      "params": {"keys": "ctrl+a"}
+    },
+    {
+      "id": "s_paste_into_box",
+      "type": "hotkey",
+      "name": "粘贴",
+      "enabled": true,
+      "breakpoint": false,
+      "params": {"keys": "ctrl+v"}
+    },
+    {
+      "id": "s_click_search_btn",
+      "type": "click",
+      "name": "点击查找按钮",
+      "enabled": true,
+      "breakpoint": false,
+      "params": {
+        "position": {"type": "fixed", "x": 980, "y": 152},
+        "button": "left",
+        "clicks": 1
+      }
+    },
+    {
+      "id": "s_wait_results",
+      "type": "wait",
+      "name": "等待结果加载",
+      "enabled": true,
+      "breakpoint": false,
+      "params": {"mode": "fixed", "seconds": 5}
+    },
+    {
+      "id": "s_log_done",
+      "type": "log",
+      "name": "记录完成",
+      "enabled": true,
+      "breakpoint": false,
+      "params": {"message": "已完成查询: ${query}", "level": "info"}
+    }
+  ],
+  "templates": {},
+  "data_source": null
+}
