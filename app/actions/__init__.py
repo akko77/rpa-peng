@@ -12,6 +12,14 @@ from .log import LogAction
 from .find_image import FindImageAction
 from .focus_window import FocusWindowAction
 from .control_flow import LoopDataAction, IfAction, BreakAction, ContinueAction
+from .browser_goto import BrowserGotoAction
+from .browser_click import BrowserClickAction
+from .browser_fill import BrowserFillAction
+from .browser_press import BrowserPressAction
+from .browser_eval import BrowserEvalAction
+from .browser_wait_for import BrowserWaitForAction
+from .browser_screenshot import BrowserScreenshotAction
+from .browser_extract import BrowserExtractAction
 
 
 _REGISTRY: Dict[str, ActionBase] = {}
@@ -28,6 +36,9 @@ for cls in (
     FocusWindowAction,
     SetVariableAction, LogAction,
     LoopDataAction, IfAction, BreakAction, ContinueAction,
+    BrowserGotoAction, BrowserClickAction, BrowserFillAction,
+    BrowserPressAction, BrowserEvalAction, BrowserWaitForAction,
+    BrowserScreenshotAction, BrowserExtractAction,
 ):
     _register(cls)
 

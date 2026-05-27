@@ -19,6 +19,7 @@ from .step_editor_panel import StepEditorPanel
 from .log_panel import LogPanel
 from .side_tabs.template_library import TemplateLibraryTab
 from .side_tabs.data_source_panel import DataSourceTab
+from .side_tabs.settings_panel import SettingsTab
 
 
 logger = logging.getLogger(__name__)
@@ -83,8 +84,10 @@ class MainWindow(QMainWindow):
         self.right_tabs = QTabWidget()
         self.template_tab = TemplateLibraryTab(DEFAULT_WORKFLOW_DIR.parent / "templates")
         self.data_source_tab = DataSourceTab()
+        self.settings_tab = SettingsTab()
         self.right_tabs.addTab(self.template_tab, "模板库")
         self.right_tabs.addTab(self.data_source_tab, "数据源")
+        self.right_tabs.addTab(self.settings_tab, "设置")
 
         self.h_split.addWidget(self.step_list)
         self.h_split.addWidget(self.editor)
@@ -116,6 +119,7 @@ class MainWindow(QMainWindow):
         self.editor.step_modified.connect(self._on_step_modified)
         self.template_tab.workflow_modified.connect(self._on_side_modified)
         self.data_source_tab.workflow_modified.connect(self._on_side_modified)
+        self.settings_tab.workflow_modified.connect(self._on_side_modified)
 
     def _build_menu(self):
         mb = self.menuBar()
@@ -177,6 +181,7 @@ class MainWindow(QMainWindow):
         self.editor.set_workflow(self._workflow)
         self.template_tab.set_workflow(self._workflow)
         self.data_source_tab.set_workflow(self._workflow)
+        self.settings_tab.set_workflow(self._workflow)
         self.name_edit.setText(self._workflow.name)
         self._update_title()
 
@@ -344,6 +349,7 @@ class MainWindow(QMainWindow):
     def _on_side_modified(self):
         """Called when template library or data source tab modifies the workflow."""
         self._mark_dirty()
+        self.editor._propagate_template_groups()
 
     def _toggle_breakpoint_on_selected(self):
         sid = self.step_list.selected_step_id()

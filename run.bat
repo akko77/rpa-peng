@@ -2,7 +2,7 @@ call D:\miniconda\Scripts\activate.bat rpa
 
 : conda activate rparpa
 
-cd D:\all_coding_test\RPA_web\code\
+cd D:\all_coding_test\RPA_web\rpa-peng\
 
 python -m app.main
 

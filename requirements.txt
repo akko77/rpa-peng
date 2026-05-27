@@ -8,6 +8,7 @@ numpy>=1.24
 simpleeval>=0.9.13
 pywin32>=306         # Windows-only; for focus_window step
 openpyxl>=3.1        # Excel data sources
+playwright>=1.40     # Browser automation (CDP)
 
 # Phase 3+ (not yet used):
 # pynput>=1.7.6       # for recorder

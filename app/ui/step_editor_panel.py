@@ -58,9 +58,9 @@ class PositionWidget(QWidget):
         layout.addWidget(self.var_input)
 
         # Template: template group name
-        self.template_input = QLineEdit()
-        self.template_input.setPlaceholderText("模板组名")
-        self.template_input.textChanged.connect(lambda *_: self.changed.emit())
+        self.template_input = QComboBox()
+        self.template_input.setMinimumWidth(120)
+        self.template_input.currentIndexChanged.connect(lambda *_: self.changed.emit())
         layout.addWidget(self.template_input)
 
         layout.addStretch(1)
@@ -99,7 +99,12 @@ class PositionWidget(QWidget):
         self.x_spin.setValue(int(value.get("x", 0) or 0))
         self.y_spin.setValue(int(value.get("y", 0) or 0))
         self.var_input.setText(str(value.get("var", "") or ""))
-        self.template_input.setText(str(value.get("template", "") or ""))
+        tpl = str(value.get("template", "") or "")
+        idx = self.template_input.findText(tpl)
+        if idx >= 0:
+            self.template_input.setCurrentIndex(idx)
+        elif tpl:
+            self.template_input.setCurrentText(tpl)
 
     def get_value(self) -> Dict[str, Any]:
         ptype = self.type_combo.currentData()
@@ -108,8 +113,19 @@ class PositionWidget(QWidget):
         if ptype == "variable":
             return {"type": "variable", "var": self.var_input.text().strip()}
         if ptype == "template":
-            return {"type": "template", "template": self.template_input.text().strip()}
+            return {"type": "template", "template": self.template_input.currentText().strip()}
         return {"type": "fixed", "x": 0, "y": 0}
+
+    def set_template_groups(self, names: List[str]) -> None:
+        cur = self.template_input.currentText()
+        self.template_input.blockSignals(True)
+        self.template_input.clear()
+        self.template_input.addItems(names)
+        if cur:
+            idx = self.template_input.findText(cur)
+            if idx >= 0:
+                self.template_input.setCurrentIndex(idx)
+        self.template_input.blockSignals(False)
 
 
 # ---------------------- Step-type specific forms ----------------------
@@ -123,6 +139,10 @@ class _BaseForm(QWidget):
 
     def write_to(self, params: Dict[str, Any]) -> None:
         raise NotImplementedError
+
+    def set_template_groups(self, names: List[str]) -> None:
+        """Update template group dropdown choices. Override in subclasses that need it."""
+        pass
 
 
 class ClickForm(_BaseForm):
@@ -152,6 +172,9 @@ class ClickForm(_BaseForm):
         p["position"] = self.position.get_value()
         p["button"] = self.button_combo.currentText()
         p["clicks"] = self.clicks_spin.value()
+
+    def set_template_groups(self, names: List[str]) -> None:
+        self.position.set_template_groups(names)
 
 
 class TypeTextForm(_BaseForm):
@@ -238,10 +261,45 @@ class WaitForm(_BaseForm):
         form.addRow("秒数 (fixed):", self.seconds)
         self.seconds_label_row = form.rowCount() - 1
 
-        self.template = QLineEdit()
-        self.template.setPlaceholderText("模板组名 (在「模板库」标签里创建)")
-        self.template.textChanged.connect(lambda *_: self.changed.emit())
+        self.template = QComboBox()
+        self.template.setEditable(True)
+        self.template.currentTextChanged.connect(lambda *_: self.changed.emit())
         form.addRow("模板组 (until_image):", self.template)
+
+        # Region (optional override)
+        self.region_check = QCheckBox("自定义搜索区域 (留空=组默认/全屏)")
+        self.region_check.toggled.connect(lambda *_: self._toggle_region())
+        self.region_check.toggled.connect(lambda *_: self.changed.emit())
+        form.addRow("", self.region_check)
+
+        rrow = QHBoxLayout()
+        self.rx = QSpinBox(); self.rx.setRange(0, 99999)
+        self.ry = QSpinBox(); self.ry.setRange(0, 99999)
+        self.rw = QSpinBox(); self.rw.setRange(1, 99999)
+        self.rh = QSpinBox(); self.rh.setRange(1, 99999)
+        for s in (self.rx, self.ry, self.rw, self.rh):
+            s.valueChanged.connect(lambda *_: self.changed.emit())
+        rrow.addWidget(QLabel("x:")); rrow.addWidget(self.rx)
+        rrow.addWidget(QLabel("y:")); rrow.addWidget(self.ry)
+        rrow.addWidget(QLabel("w:")); rrow.addWidget(self.rw)
+        rrow.addWidget(QLabel("h:")); rrow.addWidget(self.rh)
+        self.pick_region_btn = QPushButton("框选区域")
+        self.pick_region_btn.clicked.connect(self._pick_region)
+        rrow.addWidget(self.pick_region_btn)
+        rw = QWidget(); rw.setLayout(rrow)
+        form.addRow("区域:", rw)
+        self._region_widgets = [self.rx, self.ry, self.rw, self.rh, self.pick_region_btn]
+
+        # Confidence override
+        self.conf_check = QCheckBox("覆盖默认置信度")
+        self.conf_check.toggled.connect(lambda *_: self._toggle_conf())
+        self.conf_check.toggled.connect(lambda *_: self.changed.emit())
+        form.addRow("", self.conf_check)
+
+        self.confidence = QDoubleSpinBox()
+        self.confidence.setRange(0.0, 1.0); self.confidence.setSingleStep(0.05); self.confidence.setDecimals(2)
+        self.confidence.valueChanged.connect(lambda *_: self.changed.emit())
+        form.addRow("置信度:", self.confidence)
 
         self.timeout = QDoubleSpinBox()
         self.timeout.setRange(0.5, 3600.0); self.timeout.setSingleStep(0.5); self.timeout.setDecimals(1)
@@ -256,13 +314,43 @@ class WaitForm(_BaseForm):
         form.addRow("轮询间隔 (until_image):", self.poll)
 
         self._form_layout = form
+        self._toggle_region()
+        self._toggle_conf()
         self._refresh_visibility()
+
+    def _toggle_region(self):
+        on = self.region_check.isChecked()
+        for w in self._region_widgets:
+            w.setEnabled(on)
+
+    def _toggle_conf(self):
+        self.confidence.setEnabled(self.conf_check.isChecked())
+
+    def _pick_region(self):
+        from .overlays.region_picker import RegionPicker
+        win = self.window()
+        win.showMinimized()
+        try:
+            picker = RegionPicker()
+            region = picker.pick()
+        finally:
+            win.showNormal()
+            win.raise_(); win.activateWindow()
+        if region:
+            self.region_check.setChecked(True)
+            self.rx.setValue(region[0]); self.ry.setValue(region[1])
+            self.rw.setValue(region[2]); self.rh.setValue(region[3])
 
     def _refresh_visibility(self):
         is_fixed = self.mode.currentData() == "fixed"
         # Cannot hide rows in QFormLayout reliably; instead disable irrelevant widgets
         self.seconds.setEnabled(is_fixed)
         self.template.setEnabled(not is_fixed)
+        self.region_check.setEnabled(not is_fixed)
+        for w in self._region_widgets:
+            w.setEnabled(not is_fixed and self.region_check.isChecked())
+        self.conf_check.setEnabled(not is_fixed)
+        self.confidence.setEnabled(not is_fixed and self.conf_check.isChecked())
         self.timeout.setEnabled(not is_fixed)
         self.poll.setEnabled(not is_fixed)
 
@@ -271,17 +359,58 @@ class WaitForm(_BaseForm):
         if idx >= 0:
             self.mode.setCurrentIndex(idx)
         self.seconds.setValue(float(p.get("seconds", 1.0) or 0.0))
-        self.template.setText(str(p.get("template", "") or ""))
+        tpl = str(p.get("template", "") or "")
+        idx = self.template.findText(tpl)
+        if idx >= 0:
+            self.template.setCurrentIndex(idx)
+        elif tpl:
+            self.template.setCurrentText(tpl)
+        region = p.get("region")
+        if region and len(region) == 4:
+            self.region_check.setChecked(True)
+            self.rx.setValue(int(region[0])); self.ry.setValue(int(region[1]))
+            self.rw.setValue(int(region[2])); self.rh.setValue(int(region[3]))
+        else:
+            self.region_check.setChecked(False)
+        conf = p.get("confidence")
+        if conf is None:
+            self.conf_check.setChecked(False)
+        else:
+            self.conf_check.setChecked(True)
+            try:
+                self.confidence.setValue(float(conf))
+            except (TypeError, ValueError):
+                self.confidence.setValue(0.7)
         self.timeout.setValue(float(p.get("timeout", 10.0) or 10.0))
         self.poll.setValue(float(p.get("poll_interval", 0.5) or 0.5))
+        self._toggle_region()
+        self._toggle_conf()
         self._refresh_visibility()
 
     def write_to(self, p: Dict[str, Any]) -> None:
         p["mode"] = self.mode.currentData()
         p["seconds"] = self.seconds.value()
-        p["template"] = self.template.text().strip()
+        p["template"] = self.template.currentText().strip()
+        if self.region_check.isChecked():
+            p["region"] = [self.rx.value(), self.ry.value(), self.rw.value(), self.rh.value()]
+        else:
+            p["region"] = None
+        p["confidence"] = self.confidence.value() if self.conf_check.isChecked() else None
         p["timeout"] = self.timeout.value()
         p["poll_interval"] = self.poll.value()
+
+    def set_template_groups(self, names: List[str]) -> None:
+        cur = self.template.currentText()
+        self.template.blockSignals(True)
+        self.template.clear()
+        self.template.addItems(names)
+        if cur:
+            idx = self.template.findText(cur)
+            if idx >= 0:
+                self.template.setCurrentIndex(idx)
+            else:
+                self.template.setCurrentText(cur)
+        self.template.blockSignals(False)
 
 
 class ScrollForm(_BaseForm):
@@ -324,6 +453,9 @@ class ScrollForm(_BaseForm):
         p["direction"] = self.direction.currentText()
         p["amount"] = self.amount.value()
         p["at_position"] = self.position.get_value() if self.use_pos.isChecked() else None
+
+    def set_template_groups(self, names: List[str]) -> None:
+        self.position.set_template_groups(names)
 
 
 class SetVariableForm(_BaseForm):
@@ -380,9 +512,9 @@ class FindImageForm(_BaseForm):
     def __init__(self):
         super().__init__()
         form = QFormLayout(self)
-        self.template = QLineEdit()
-        self.template.setPlaceholderText("模板组名 (在「模板库」标签里管理)")
-        self.template.textChanged.connect(lambda *_: self.changed.emit())
+        self.template = QComboBox()
+        self.template.setEditable(True)
+        self.template.currentTextChanged.connect(lambda *_: self.changed.emit())
         form.addRow("模板组:", self.template)
 
         # Region (optional override)
@@ -452,7 +584,12 @@ class FindImageForm(_BaseForm):
             self.rw.setValue(region[2]); self.rh.setValue(region[3])
 
     def load(self, p: Dict[str, Any]) -> None:
-        self.template.setText(str(p.get("template", "") or ""))
+        tpl = str(p.get("template", "") or "")
+        idx = self.template.findText(tpl)
+        if idx >= 0:
+            self.template.setCurrentIndex(idx)
+        elif tpl:
+            self.template.setCurrentText(tpl)
         region = p.get("region")
         if region and len(region) == 4:
             self.region_check.setChecked(True)
@@ -472,12 +609,25 @@ class FindImageForm(_BaseForm):
         self._toggle_region(); self._toggle_conf()
 
     def write_to(self, p: Dict[str, Any]) -> None:
-        p["template"] = self.template.text().strip()
+        p["template"] = self.template.currentText().strip()
         if self.region_check.isChecked():
             p["region"] = [self.rx.value(), self.ry.value(), self.rw.value(), self.rh.value()]
         else:
             p["region"] = None
         p["confidence"] = self.confidence.value() if self.conf_check.isChecked() else None
+
+    def set_template_groups(self, names: List[str]) -> None:
+        cur = self.template.currentText()
+        self.template.blockSignals(True)
+        self.template.clear()
+        self.template.addItems(names)
+        if cur:
+            idx = self.template.findText(cur)
+            if idx >= 0:
+                self.template.setCurrentIndex(idx)
+            else:
+                self.template.setCurrentText(cur)
+        self.template.blockSignals(False)
 
 
 class FocusWindowForm(_BaseForm):
@@ -653,6 +803,325 @@ class ContinueForm(EmptyForm):
         super().__init__("跳到当前最近的 loop_data 循环的下一项。")
 
 
+# ---------------------- Browser action forms ----------------------
+
+class BrowserGotoForm(_BaseForm):
+    def __init__(self):
+        super().__init__()
+        form = QFormLayout(self)
+        self.url = QLineEdit()
+        self.url.setPlaceholderText("https://example.com，支持 ${var} 插值")
+        self.url.textChanged.connect(lambda *_: self.changed.emit())
+        form.addRow("URL:", self.url)
+
+        self.wait_until = QComboBox()
+        self.wait_until.addItems(["load", "domcontentloaded", "networkidle"])
+        self.wait_until.currentTextChanged.connect(lambda *_: self.changed.emit())
+        form.addRow("等待方式:", self.wait_until)
+
+    def load(self, p: Dict[str, Any]) -> None:
+        self.url.setText(str(p.get("url", "")))
+        self.wait_until.setCurrentText(p.get("wait_until", "load"))
+
+    def write_to(self, p: Dict[str, Any]) -> None:
+        p["url"] = self.url.text().strip()
+        p["wait_until"] = self.wait_until.currentText()
+
+
+class BrowserClickForm(_BaseForm):
+    def __init__(self):
+        super().__init__()
+        form = QFormLayout(self)
+
+        self.position_mode = QComboBox()
+        self.position_mode.addItem("CSS 选择器", "selector")
+        self.position_mode.addItem("模板图片", "template")
+        self.position_mode.currentIndexChanged.connect(lambda *_: self._refresh_mode())
+        self.position_mode.currentIndexChanged.connect(lambda *_: self.changed.emit())
+        form.addRow("定位方式:", self.position_mode)
+
+        self.selector = QLineEdit()
+        self.selector.setPlaceholderText("CSS 选择器，如 #btn, .cls, text=登录")
+        self.selector.textChanged.connect(lambda *_: self.changed.emit())
+        form.addRow("选择器:", self.selector)
+
+        self.template = QComboBox()
+        self.template.setEditable(True)
+        self.template.currentTextChanged.connect(lambda *_: self.changed.emit())
+        form.addRow("模板组:", self.template)
+
+        self.conf_check = QCheckBox("覆盖默认置信度")
+        self.conf_check.toggled.connect(lambda *_: self.confidence.setEnabled(self.conf_check.isChecked()))
+        self.conf_check.toggled.connect(lambda *_: self.changed.emit())
+        form.addRow("", self.conf_check)
+
+        self.confidence = QDoubleSpinBox()
+        self.confidence.setRange(0.0, 1.0); self.confidence.setSingleStep(0.05); self.confidence.setDecimals(2)
+        self.confidence.setEnabled(False)
+        self.confidence.valueChanged.connect(lambda *_: self.changed.emit())
+        form.addRow("置信度:", self.confidence)
+
+        self.button = QComboBox()
+        self.button.addItems(["left", "right", "middle"])
+        self.button.currentTextChanged.connect(lambda *_: self.changed.emit())
+        form.addRow("按键:", self.button)
+
+        self.clicks = QSpinBox()
+        self.clicks.setRange(1, 10)
+        self.clicks.valueChanged.connect(lambda *_: self.changed.emit())
+        form.addRow("点击次数:", self.clicks)
+
+        self.timeout = QSpinBox()
+        self.timeout.setRange(1000, 120000)
+        self.timeout.setSingleStep(1000)
+        self.timeout.setValue(30000)
+        self.timeout.setSuffix(" ms")
+        self.timeout.valueChanged.connect(lambda *_: self.changed.emit())
+        form.addRow("超时:", self.timeout)
+
+        self._refresh_mode()
+
+    def _refresh_mode(self):
+        is_selector = self.position_mode.currentData() == "selector"
+        self.selector.setEnabled(is_selector)
+        self.template.setEnabled(not is_selector)
+        self.conf_check.setEnabled(not is_selector)
+        self.confidence.setEnabled(not is_selector and self.conf_check.isChecked())
+        self.timeout.setEnabled(is_selector)
+
+    def load(self, p: Dict[str, Any]) -> None:
+        mode = p.get("position_mode", "selector")
+        idx = self.position_mode.findData(mode)
+        if idx >= 0:
+            self.position_mode.setCurrentIndex(idx)
+        self.selector.setText(str(p.get("selector", "")))
+        tpl = str(p.get("template", ""))
+        idx = self.template.findText(tpl)
+        if idx >= 0:
+            self.template.setCurrentIndex(idx)
+        elif tpl:
+            self.template.setCurrentText(tpl)
+        conf = p.get("confidence")
+        if conf is not None:
+            self.conf_check.setChecked(True)
+            self.confidence.setValue(float(conf))
+        else:
+            self.conf_check.setChecked(False)
+        self.button.setCurrentText(p.get("button", "left"))
+        self.clicks.setValue(int(p.get("clicks", 1) or 1))
+        self.timeout.setValue(int(p.get("timeout", 30000) or 30000))
+        self._refresh_mode()
+
+    def write_to(self, p: Dict[str, Any]) -> None:
+        p["position_mode"] = self.position_mode.currentData()
+        p["selector"] = self.selector.text().strip()
+        p["template"] = self.template.currentText().strip()
+        p["confidence"] = self.confidence.value() if self.conf_check.isChecked() else None
+        p["button"] = self.button.currentText()
+        p["clicks"] = self.clicks.value()
+        p["timeout"] = self.timeout.value()
+
+    def set_template_groups(self, names: List[str]) -> None:
+        cur = self.template.currentText()
+        self.template.blockSignals(True)
+        self.template.clear()
+        self.template.addItems(names)
+        if cur:
+            idx = self.template.findText(cur)
+            if idx >= 0:
+                self.template.setCurrentIndex(idx)
+            else:
+                self.template.setCurrentText(cur)
+        self.template.blockSignals(False)
+
+
+class BrowserFillForm(_BaseForm):
+    def __init__(self):
+        super().__init__()
+        form = QFormLayout(self)
+        self.selector = QLineEdit()
+        self.selector.setPlaceholderText("CSS 选择器，如 #kw, input[name='q']")
+        self.selector.textChanged.connect(lambda *_: self.changed.emit())
+        form.addRow("选择器:", self.selector)
+
+        self.text = QPlainTextEdit()
+        self.text.setPlaceholderText("要填写的文本，支持 ${var} 插值")
+        self.text.setMaximumHeight(120)
+        self.text.textChanged.connect(lambda *_: self.changed.emit())
+        form.addRow("文本:", self.text)
+
+        self.clear_first = QCheckBox("填写前先清空")
+        self.clear_first.toggled.connect(lambda *_: self.changed.emit())
+        form.addRow("", self.clear_first)
+
+    def load(self, p: Dict[str, Any]) -> None:
+        self.selector.setText(str(p.get("selector", "")))
+        self.text.setPlainText(str(p.get("text", "")))
+        self.clear_first.setChecked(bool(p.get("clear_first", True)))
+
+    def write_to(self, p: Dict[str, Any]) -> None:
+        p["selector"] = self.selector.text().strip()
+        p["text"] = self.text.toPlainText()
+        p["clear_first"] = self.clear_first.isChecked()
+
+
+class BrowserPressForm(_BaseForm):
+    def __init__(self):
+        super().__init__()
+        form = QFormLayout(self)
+        self.selector = QLineEdit()
+        self.selector.setPlaceholderText("(可选) CSS 选择器，留空则全局按键")
+        self.selector.textChanged.connect(lambda *_: self.changed.emit())
+        form.addRow("选择器:", self.selector)
+
+        self.key = QLineEdit()
+        self.key.setPlaceholderText("Enter / Tab / Escape / Control+a 等 Playwright 键名")
+        self.key.textChanged.connect(lambda *_: self.changed.emit())
+        form.addRow("按键:", self.key)
+
+    def load(self, p: Dict[str, Any]) -> None:
+        self.selector.setText(str(p.get("selector", "")))
+        self.key.setText(str(p.get("key", "Enter")))
+
+    def write_to(self, p: Dict[str, Any]) -> None:
+        p["selector"] = self.selector.text().strip()
+        p["key"] = self.key.text().strip()
+
+
+class BrowserEvalForm(_BaseForm):
+    def __init__(self):
+        super().__init__()
+        form = QFormLayout(self)
+        self.expression = QPlainTextEdit()
+        self.expression.setPlaceholderText("JavaScript 表达式，如 document.title")
+        self.expression.setMaximumHeight(120)
+        self.expression.textChanged.connect(lambda *_: self.changed.emit())
+        form.addRow("表达式:", self.expression)
+
+        self.save_as = QLineEdit()
+        self.save_as.setPlaceholderText("变量名 (不含 ${})")
+        self.save_as.textChanged.connect(lambda *_: self.changed.emit())
+        form.addRow("存为变量:", self.save_as)
+
+    def load(self, p: Dict[str, Any]) -> None:
+        self.expression.setPlainText(str(p.get("expression", "")))
+        self.save_as.setText(str(p.get("save_as", "")))
+
+    def write_to(self, p: Dict[str, Any]) -> None:
+        p["expression"] = self.expression.toPlainText()
+        p["save_as"] = self.save_as.text().strip()
+
+
+class BrowserWaitForForm(_BaseForm):
+    def __init__(self):
+        super().__init__()
+        form = QFormLayout(self)
+        self.selector = QLineEdit()
+        self.selector.setPlaceholderText("CSS 选择器")
+        self.selector.textChanged.connect(lambda *_: self.changed.emit())
+        form.addRow("选择器:", self.selector)
+
+        self.state = QComboBox()
+        self.state.addItems(["visible", "hidden", "attached", "detached"])
+        self.state.currentTextChanged.connect(lambda *_: self.changed.emit())
+        form.addRow("状态:", self.state)
+
+        self.timeout = QSpinBox()
+        self.timeout.setRange(1000, 120000)
+        self.timeout.setSingleStep(1000)
+        self.timeout.setValue(30000)
+        self.timeout.setSuffix(" ms")
+        self.timeout.valueChanged.connect(lambda *_: self.changed.emit())
+        form.addRow("超时:", self.timeout)
+
+    def load(self, p: Dict[str, Any]) -> None:
+        self.selector.setText(str(p.get("selector", "")))
+        self.state.setCurrentText(p.get("state", "visible"))
+        self.timeout.setValue(int(p.get("timeout", 30000) or 30000))
+
+    def write_to(self, p: Dict[str, Any]) -> None:
+        p["selector"] = self.selector.text().strip()
+        p["state"] = self.state.currentText()
+        p["timeout"] = self.timeout.value()
+
+
+class BrowserScreenshotForm(_BaseForm):
+    def __init__(self):
+        super().__init__()
+        form = QFormLayout(self)
+        self.path = QLineEdit()
+        self.path.setPlaceholderText("保存路径，支持 ${var}，如 screenshots/${__index__}.png")
+        self.path.textChanged.connect(lambda *_: self.changed.emit())
+        form.addRow("路径:", self.path)
+
+        self.full_page = QCheckBox("整页截图（含滚动区域）")
+        self.full_page.toggled.connect(lambda *_: self.changed.emit())
+        form.addRow("", self.full_page)
+
+        self.selector = QLineEdit()
+        self.selector.setPlaceholderText("(可选) 仅截取某个元素")
+        self.selector.textChanged.connect(lambda *_: self.changed.emit())
+        form.addRow("元素选择器:", self.selector)
+
+    def load(self, p: Dict[str, Any]) -> None:
+        self.path.setText(str(p.get("path", "")))
+        self.full_page.setChecked(bool(p.get("full_page", False)))
+        self.selector.setText(str(p.get("selector", "")))
+
+    def write_to(self, p: Dict[str, Any]) -> None:
+        p["path"] = self.path.text().strip()
+        p["full_page"] = self.full_page.isChecked()
+        p["selector"] = self.selector.text().strip()
+
+
+class BrowserExtractForm(_BaseForm):
+    def __init__(self):
+        super().__init__()
+        form = QFormLayout(self)
+        self.selector = QLineEdit()
+        self.selector.setPlaceholderText("CSS 选择器")
+        self.selector.textChanged.connect(lambda *_: self.changed.emit())
+        form.addRow("选择器:", self.selector)
+
+        self.extract = QComboBox()
+        self.extract.addItems(["text", "attribute", "inner_html", "value"])
+        self.extract.currentIndexChanged.connect(lambda *_: self._refresh_attr())
+        self.extract.currentTextChanged.connect(lambda *_: self.changed.emit())
+        form.addRow("提取类型:", self.extract)
+
+        self.attribute = QLineEdit()
+        self.attribute.setPlaceholderText("extract=attribute 时指定，如 href / src")
+        self.attribute.textChanged.connect(lambda *_: self.changed.emit())
+        form.addRow("属性名:", self.attribute)
+
+        self.save_as = QLineEdit()
+        self.save_as.setPlaceholderText("变量名 (不含 ${})")
+        self.save_as.textChanged.connect(lambda *_: self.changed.emit())
+        form.addRow("存为变量:", self.save_as)
+
+        self.extract_all = QCheckBox("提取所有匹配元素（存为列表）")
+        self.extract_all.toggled.connect(lambda *_: self.changed.emit())
+        form.addRow("", self.extract_all)
+
+    def _refresh_attr(self):
+        self.attribute.setEnabled(self.extract.currentText() == "attribute")
+
+    def load(self, p: Dict[str, Any]) -> None:
+        self.selector.setText(str(p.get("selector", "")))
+        self.extract.setCurrentText(p.get("extract", "text"))
+        self.attribute.setText(str(p.get("attribute", "")))
+        self.save_as.setText(str(p.get("save_as", "")))
+        self.extract_all.setChecked(bool(p.get("all", False)))
+        self._refresh_attr()
+
+    def write_to(self, p: Dict[str, Any]) -> None:
+        p["selector"] = self.selector.text().strip()
+        p["extract"] = self.extract.currentText()
+        p["attribute"] = self.attribute.text().strip()
+        p["save_as"] = self.save_as.text().strip()
+        p["all"] = self.extract_all.isChecked()
+
+
 FORM_CLASSES: Dict[str, type] = {
     "click": ClickForm,
     "type_text": TypeTextForm,
@@ -668,6 +1137,14 @@ FORM_CLASSES: Dict[str, type] = {
     "loop_data": LoopDataForm,
     "break": BreakForm,
     "continue": ContinueForm,
+    "browser_goto": BrowserGotoForm,
+    "browser_click": BrowserClickForm,
+    "browser_fill": BrowserFillForm,
+    "browser_press": BrowserPressForm,
+    "browser_eval": BrowserEvalForm,
+    "browser_wait_for": BrowserWaitForForm,
+    "browser_screenshot": BrowserScreenshotForm,
+    "browser_extract": BrowserExtractForm,
 }
 
 
@@ -737,7 +1214,13 @@ class StepEditorPanel(QWidget):
     def set_workflow(self, workflow: Workflow):
         self._workflow = workflow
         self._refresh_jump_combos()
+        self._propagate_template_groups()
         self.show_step(None)
+
+    def _propagate_template_groups(self):
+        names = list(self._workflow.templates.keys()) if self._workflow else []
+        for form in self._forms.values():
+            form.set_template_groups(names)
 
     def show_step(self, step_id: Optional[str]):
         if not self._workflow or not step_id:

@@ -54,6 +54,15 @@ class WorkflowExecutor(QObject):
         self.context.workflow = workflow            # type: ignore[attr-defined]
         self.context.templates_dir = self.templates_dir  # type: ignore[attr-defined]
 
+        from .browser import BrowserManager
+        browser_cfg = workflow.settings.browser or {}
+        self._browser_manager = BrowserManager(
+            headless=browser_cfg.get("headless", False),
+            browser_type=browser_cfg.get("browser_type", "chromium"),
+            user_data_dir=browser_cfg.get("user_data_dir"),
+        )
+        self.context.browser_manager = self._browser_manager  # type: ignore[attr-defined]
+
         self._pause_event = threading.Event(); self._pause_event.set()
         self._stop_event = threading.Event()
         self._single_step_pending = False
@@ -78,6 +87,8 @@ class WorkflowExecutor(QObject):
             ok = False; summary = f"执行器异常: {e}"
             self._log("error", summary)
             self._log("error", traceback.format_exc())
+        finally:
+            self._browser_manager.close()
 
         self._set_state(ExecutorState.STOPPED if not ok else ExecutorState.IDLE)
         self._log("info", f"工作流结束: {summary}")
@@ -192,14 +203,34 @@ class WorkflowExecutor(QObject):
                 self._post_step_pause_if_single_step()
                 continue
 
-            try:
-                result = action.execute(interpolated, self.context)
-            except Exception as e:
-                self._log("error", f"{indent}步骤异常: {e}")
-                self._log("error", traceback.format_exc())
-                self.step_finished.emit(step.id, False, str(e))
-                idx = self._next_after_failure(step, id_to_idx, idx, steps)
-                self._post_step_pause_if_single_step()
+            # wait 步骤自带超时机制，不需要重试
+            max_retries = 0 if step.type == "wait" else self.workflow.settings.retry_max
+            retry_delay = self.workflow.settings.retry_delay_sec
+            result = None
+            for attempt in range(max_retries + 1):
+                if attempt > 0:
+                    self._log("info", f"{indent}重试第 {attempt}/{max_retries} 次, 等待 {retry_delay}s ...")
+                    self._interruptible_sleep(retry_delay)
+
+                try:
+                    result = action.execute(interpolated, self.context)
+                except Exception as e:
+                    self._log("error", f"{indent}步骤异常: {e}")
+                    if attempt < max_retries:
+                        continue
+                    self._log("error", traceback.format_exc())
+                    self.step_finished.emit(step.id, False, str(e))
+                    idx = self._next_after_failure(step, id_to_idx, idx, steps)
+                    self._post_step_pause_if_single_step()
+                    result = None
+                    break
+
+                if result.success:
+                    break
+                if attempt < max_retries:
+                    self._log("warning", f"{indent}步骤失败: {result.message}, 准备重试...")
+
+            if result is None:
                 continue
 
             if step.type == "log" and result.data:

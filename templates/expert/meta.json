@@ -1,0 +1,19 @@
+{
+  "name": "expert",
+  "variants": [
+    {
+      "file": "v1.png",
+      "confidence": 0.7,
+      "added_at": "2026-05-22",
+      "note": ""
+    }
+  ],
+  "default_region": [
+    1093,
+    474,
+    134,
+    40
+  ],
+  "default_confidence": 0.7,
+  "match_strategy": "first_hit"
+}

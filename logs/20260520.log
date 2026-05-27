@@ -2,3 +2,9 @@
 2026-05-20 21:09:26,264 - INFO - __main__ - 启动 AutoWorkflow
 2026-05-20 21:35:39,740 - INFO - app.ui.main_window - 已另存为: D:/all_coding_test/RPA_web/code/workflows/stockanalysis.awf.json
 2026-05-20 21:36:11,100 - INFO - __main__ - 启动 AutoWorkflow
+2026-05-20 23:31:37,066 - INFO - __main__ - 启动 AutoWorkflow
+2026-05-20 23:37:34,207 - DEBUG - asyncio - Using proactor: IocpProactor
+2026-05-20 23:39:28,357 - INFO - __main__ - 启动 AutoWorkflow
+2026-05-20 23:40:04,767 - DEBUG - asyncio - Using proactor: IocpProactor
+2026-05-20 23:41:08,727 - DEBUG - asyncio - Using proactor: IocpProactor
+2026-05-20 23:54:00,961 - INFO - __main__ - 启动 AutoWorkflow

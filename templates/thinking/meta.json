@@ -1,0 +1,19 @@
+{
+  "name": "thinking",
+  "variants": [
+    {
+      "file": "v2.png",
+      "confidence": 0.7,
+      "added_at": "2026-05-22",
+      "note": ""
+    }
+  ],
+  "default_region": [
+    714,
+    625,
+    114,
+    37
+  ],
+  "default_confidence": 0.7,
+  "match_strategy": "first_hit"
+}

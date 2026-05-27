@@ -46,7 +46,7 @@ class WaitAction(ActionBase):
         if mode == "until_image":
             template_name = params.get("template", "")
             if not template_name:
-                return ActionResult(False, "wait(until_image): 'template' is empty")
+                return ActionResult(False, "wait(until_image): 未指定模板组名称")
             try:
                 timeout = float(params.get("timeout", 10.0) or 10.0)
             except (TypeError, ValueError):
@@ -67,7 +67,12 @@ class WaitAction(ActionBase):
                 return ActionResult(False, "wait(until_image): executor context missing")
             group = workflow.templates.get(template_name)
             if group is None:
-                return ActionResult(False, f"wait(until_image): template '{template_name}' not found")
+                available = list(workflow.templates.keys()) if workflow.templates else []
+                return ActionResult(False, f"wait(until_image): 模板组 '{template_name}' 不存在, 可用: {available}")
+            if not group.variants:
+                return ActionResult(False, f"wait(until_image): 模板组 '{template_name}' 没有图片变体")
+
+            confidence = params.get("confidence")
 
             from ..core.matcher import TemplateMatcher
             matcher = TemplateMatcher(templates_dir)
@@ -75,19 +80,19 @@ class WaitAction(ActionBase):
             elapsed = 0.0
             while elapsed < timeout:
                 try:
-                    result = matcher.match_group(group, region=region)
+                    result = matcher.match_group(group, region=region, confidence_override=confidence)
                 except Exception as e:
-                    return ActionResult(False, f"match error: {e}")
+                    return ActionResult(False, f"匹配异常: {e}")
                 if result is not None:
                     context.set("found", True)
                     context.set("match_pos", list(result.center))
                     context.set("match_score", result.score)
                     return ActionResult(
                         True,
-                        f"image found after {elapsed:.1f}s at {result.center}",
+                        f"图片在 {elapsed:.1f}s 后出现, 位置 {result.center}",
                     )
                 time.sleep(poll)
                 elapsed += poll
-            return ActionResult(False, f"wait(until_image) timeout after {timeout}s")
+            return ActionResult(False, f"wait(until_image): 等待 {timeout}s 超时, 未找到图片")
 
         return ActionResult(False, f"unknown wait mode: {mode}")

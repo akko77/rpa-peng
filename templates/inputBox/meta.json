@@ -1,0 +1,25 @@
+{
+  "name": "inputBox",
+  "variants": [
+    {
+      "file": "v1.png",
+      "confidence": 0.7,
+      "added_at": "2026-05-22",
+      "note": ""
+    },
+    {
+      "file": "v2.png",
+      "confidence": 0.7,
+      "added_at": "2026-05-22",
+      "note": ""
+    }
+  ],
+  "default_region": [
+    700,
+    547,
+    495,
+    67
+  ],
+  "default_confidence": 0.5,
+  "match_strategy": "first_hit"
+}

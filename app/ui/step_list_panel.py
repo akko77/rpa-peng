@@ -1,7 +1,7 @@
 """Step list panel (Phase 2): tree-based to support nested step bodies."""
 from typing import Dict, List, Optional, Tuple
 
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import Qt, Signal, QMimeData
 from PySide6.QtGui import QAction, QBrush, QColor, QPainter, QPen
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QTreeWidget, QTreeWidgetItem,
@@ -17,6 +17,37 @@ _BODY_KEY_ROLE = Qt.ItemDataRole.UserRole + 2
 _PARENT_ID_ROLE = Qt.ItemDataRole.UserRole + 3
 _CURRENT_ROLE = Qt.ItemDataRole.UserRole + 4
 _BREAKPOINT_ROLE = Qt.ItemDataRole.UserRole + 5
+
+
+class _StepTreeWidget(QTreeWidget):
+    """QTreeWidget subclass that emits a signal after every drop.
+
+    Why: QTreeWidget's default drag-drop implements 'move' as
+    beginRemoveRows() + beginInsertRows() — NOT beginMoveRows(). Therefore
+    the standard rowsMoved signal is never emitted by the internal model,
+    even though visually the row appears to move. We override dropEvent so
+    we can resync the underlying workflow data structure after every drop.
+    """
+    drop_completed = Signal()
+
+    def dropMimeData(self, parent, index, data, action):
+        # Prevent drops that would nest a step inside another step.
+        # Only body-key headers (▸ body / ▸ then / ▸ else) should accept
+        # children; regular step items must always stay at the same level.
+        if parent is not None and not parent.data(0, _BODY_KEY_ROLE):
+            # Target is a regular step, not a body header — force sibling.
+            gp = parent.parent()
+            if gp is None:
+                gp = self.invisibleRootItem()
+            row = gp.indexOfChild(parent) + 1
+            return super().dropMimeData(gp, row, data, action)
+        return super().dropMimeData(parent, index, data, action)
+
+    def dropEvent(self, event):
+        super().dropEvent(event)
+        # super() has already mutated the tree to its final state; emit so
+        # the panel can rebuild workflow.steps from the new visual order.
+        self.drop_completed.emit()
 
 
 class _Delegate(QStyledItemDelegate):
@@ -67,14 +98,17 @@ class StepListPanel(QWidget):
         tools.addStretch(1)
         layout.addLayout(tools)
 
-        self.tree = QTreeWidget()
+        self.tree = _StepTreeWidget()
         self.tree.setHeaderHidden(True)
         self.tree.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
         self.tree.setDragDropMode(QAbstractItemView.DragDropMode.InternalMove)
         self.tree.setItemDelegate(_Delegate(self.tree))
         self.tree.itemChanged.connect(self._on_item_changed)
         self.tree.itemSelectionChanged.connect(self._on_selection_changed)
-        self.tree.model().rowsMoved.connect(self._on_rows_moved)
+        # IMPORTANT: connect to our custom drop_completed, NOT model().rowsMoved.
+        # QTreeWidget's default drag implementation does remove+insert, so
+        # rowsMoved is never emitted.
+        self.tree.drop_completed.connect(self._on_rows_moved)
         layout.addWidget(self.tree, 1)
 
     # ---------- public ----------
@@ -137,7 +171,9 @@ class StepListPanel(QWidget):
         item.setData(0, _BODY_KEY_ROLE, None)
         item.setData(0, _BREAKPOINT_ROLE, step.breakpoint)
         item.setData(0, _CURRENT_ROLE, False)
-        item.setFlags(item.flags() | Qt.ItemFlag.ItemIsUserCheckable | Qt.ItemFlag.ItemIsDragEnabled)
+        item.setFlags((item.flags() | Qt.ItemFlag.ItemIsUserCheckable
+                       | Qt.ItemFlag.ItemIsDragEnabled)
+                      & ~Qt.ItemFlag.ItemIsDropEnabled)
         item.setCheckState(0, Qt.CheckState.Checked if step.enabled else Qt.CheckState.Unchecked)
 
         for body_key in NESTED_BODY_FIELDS.get(step.type, ()):

@@ -1,6 +1,6 @@
 {
   "name": "stockanalysis",
-  "description": "",
+  "description": "自动打开DeepSeek，开启专家/思考模式，循环读取Excel公司列表，逐个发送模板提问",
   "version": "0.2",
   "variables": {},
   "settings": {
@@ -10,15 +10,21 @@
     "long_pause_every": 15,
     "default_step_timeout": 10.0,
     "failure_policy": "continue",
-    "retry_max": 2,
+    "retry_max": 0,
+    "retry_delay_sec": 3.0,
     "record_merge_threshold_sec": 1.5,
-    "record_idle_to_wait_sec": 1.5
+    "record_idle_to_wait_sec": 1.5,
+    "browser": {
+      "headless": false,
+      "browser_type": "chromium",
+      "user_data_dir": null
+    }
   },
   "steps": [
     {
       "id": "s_5927cbf5",
       "type": "find_image",
-      "name": "查找图片",
+      "name": "看deepseek标签页是否存在",
       "enabled": true,
       "breakpoint": false,
       "params": {
@@ -42,24 +48,9 @@
         "condition": "found == False",
         "then": [
           {
-            "id": "s_cb812ef5",
-            "type": "click",
-            "name": "点击",
-            "enabled": true,
-            "breakpoint": false,
-            "params": {
-              "position": {
-                "type": "variable",
-                "var": "match_pos"
-              },
-              "button": "left",
-              "clicks": 1
-            }
-          },
-          {
             "id": "s_347a8035",
             "type": "find_image",
-            "name": "查找图片",
+            "name": "找google",
             "enabled": true,
             "breakpoint": false,
             "params": {
@@ -72,9 +63,668 @@
               ],
               "confidence": null
             }
+          },
+          {
+            "id": "s_0bc933a6",
+            "type": "if",
+            "name": "条件分支",
+            "enabled": true,
+            "breakpoint": false,
+            "params": {
+              "condition": "found == True",
+              "then": [
+                {
+                  "id": "s_d60aec07",
+                  "type": "click",
+                  "name": "进入浏览器",
+                  "enabled": true,
+                  "breakpoint": false,
+                  "params": {
+                    "position": {
+                      "type": "variable",
+                      "var": "match_pos"
+                    },
+                    "button": "left",
+                    "clicks": 1
+                  }
+                },
+                {
+                  "id": "s_f5ded01d",
+                  "type": "find_image",
+                  "name": "看deepseek标签页是否存在",
+                  "enabled": true,
+                  "breakpoint": false,
+                  "params": {
+                    "template": "deepseekgoogleicon",
+                    "region": [
+                      9,
+                      6,
+                      1793,
+                      42
+                    ],
+                    "confidence": null
+                  }
+                },
+                {
+                  "id": "s_30ee53ba",
+                  "type": "if",
+                  "name": "条件分支",
+                  "enabled": true,
+                  "breakpoint": false,
+                  "params": {
+                    "condition": "found == True",
+                    "then": [
+                      {
+                        "id": "s_8b14a4d2",
+                        "type": "click",
+                        "name": "进入deepseek页面",
+                        "enabled": true,
+                        "breakpoint": false,
+                        "params": {
+                          "position": {
+                            "type": "variable",
+                            "var": "match_pos"
+                          },
+                          "button": "left",
+                          "clicks": 1
+                        }
+                      }
+                    ],
+                    "else": []
+                  }
+                }
+              ],
+              "else": [
+                {
+                  "id": "s_756d9ec5",
+                  "type": "log",
+                  "name": "日志",
+                  "enabled": true,
+                  "breakpoint": false,
+                  "params": {
+                    "message": "没有找到Google浏览器",
+                    "level": "info"
+                  }
+                },
+                {
+                  "id": "s_9e2bee82",
+                  "type": "break",
+                  "name": "break",
+                  "enabled": true,
+                  "breakpoint": false,
+                  "params": {}
+                }
+              ]
+            }
+          }
+        ],
+        "else": [
+          {
+            "id": "s_cb812ef5",
+            "type": "click",
+            "name": "进入deepseek页面",
+            "enabled": true,
+            "breakpoint": false,
+            "params": {
+              "position": {
+                "type": "variable",
+                "var": "match_pos"
+              },
+              "button": "left",
+              "clicks": 1
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "s_wait_load",
+      "type": "wait",
+      "name": "等页面加载",
+      "enabled": true,
+      "breakpoint": false,
+      "params": {
+        "mode": "fixed",
+        "seconds": 3
+      }
+    },
+    {
+      "id": "s_find_expert",
+      "type": "find_image",
+      "name": "查找专家模式按钮",
+      "enabled": true,
+      "breakpoint": false,
+      "params": {
+        "template": "expert",
+        "region": [
+          485,
+          327,
+          1228,
+          678
+        ],
+        "confidence": null
+      }
+    },
+    {
+      "id": "s_if_expert",
+      "type": "if",
+      "name": "专家模式是否已开启",
+      "enabled": true,
+      "breakpoint": false,
+      "params": {
+        "condition": "found == True",
+        "then": [
+          {
+            "id": "s_click_expert",
+            "type": "click",
+            "name": "点击开启专家模式",
+            "enabled": true,
+            "breakpoint": false,
+            "params": {
+              "position": {
+                "type": "variable",
+                "var": "match_pos"
+              },
+              "button": "left",
+              "clicks": 1
+            }
           }
         ],
         "else": []
+      }
+    },
+    {
+      "id": "s_wait_expert",
+      "type": "wait",
+      "name": "等专家模式生效",
+      "enabled": true,
+      "breakpoint": false,
+      "params": {
+        "mode": "fixed",
+        "seconds": 1
+      }
+    },
+    {
+      "id": "s_find_thinking",
+      "type": "find_image",
+      "name": "查找思考模式按钮",
+      "enabled": true,
+      "breakpoint": false,
+      "params": {
+        "template": "thinking",
+        "region": [
+          538,
+          339,
+          1127,
+          692
+        ],
+        "confidence": 0.98
+      }
+    },
+    {
+      "id": "s_if_thinking",
+      "type": "if",
+      "name": "思考模式是否已开启",
+      "enabled": true,
+      "breakpoint": false,
+      "params": {
+        "condition": "found == True",
+        "then": [
+          {
+            "id": "s_click_thinking",
+            "type": "click",
+            "name": "点击开启思考模式",
+            "enabled": true,
+            "breakpoint": false,
+            "params": {
+              "position": {
+                "type": "variable",
+                "var": "match_pos"
+              },
+              "button": "left",
+              "clicks": 1
+            }
+          }
+        ],
+        "else": []
+      }
+    },
+    {
+      "id": "s_wait_thinking",
+      "type": "wait",
+      "name": "等思考模式生效",
+      "enabled": true,
+      "breakpoint": false,
+      "params": {
+        "mode": "fixed",
+        "seconds": 1
+      }
+    },
+    {
+      "id": "s_find_input",
+      "type": "find_image",
+      "name": "查找输入框",
+      "enabled": true,
+      "breakpoint": false,
+      "params": {
+        "template": "inputBox",
+        "region": [
+          404,
+          204,
+          1354,
+          837
+        ],
+        "confidence": 0.4
+      }
+    },
+    {
+      "id": "s_click_input",
+      "type": "click",
+      "name": "点击输入框",
+      "enabled": true,
+      "breakpoint": false,
+      "params": {
+        "position": {
+          "type": "variable",
+          "var": "match_pos"
+        },
+        "button": "left",
+        "clicks": 2
+      }
+    },
+    {
+      "id": "s_loop_company",
+      "type": "loop_data",
+      "name": "循环每个公司",
+      "enabled": true,
+      "breakpoint": false,
+      "params": {
+        "source": {
+          "type": "xlsx",
+          "path": "3.xlsx",
+          "sheet": null,
+          "column": "公司名",
+          "inline_items": null,
+          "start_index": 0,
+          "end_index": null,
+          "skip_empty": true,
+          "filter": null
+        },
+        "item_var": "item",
+        "body": [
+          {
+            "id": "s_log_company",
+            "type": "log",
+            "name": "记录当前公司",
+            "enabled": true,
+            "breakpoint": false,
+            "params": {
+              "message": "正在处理: ${item}",
+              "level": "info"
+            }
+          },
+          {
+            "id": "s_paste_t1",
+            "type": "paste",
+            "name": "粘贴第一个模板",
+            "enabled": true,
+            "breakpoint": false,
+            "params": {
+              "text": "${item}全面分析这支股票，从以下这些方面分析，不少于1000字，不要瞎编\n\n公司定位与业务概览：使用表格介绍公司主营业务和市场竞争地位，和同业公司对比优势在哪。\n\n投资亮点分析：列举公司核心竞争优势和护城河。\n\n潜在风险提示：分析公司面临的财务、经营和市场风险。\n\n财务健康状况：评估公司的盈利能力、现金流，归母净利润，扣非净利润和资产负债情况。\n\n估值水平分析：对比同业公司，判断估值合理性，尤其是企业的市销率，市净率，市盈率，机构态度与市场认知等等。",
+              "delay_after_copy": 0.2
+            }
+          },
+          {
+            "id": "s_find_submit1",
+            "type": "find_image",
+            "name": "查找发送按钮",
+            "enabled": true,
+            "breakpoint": false,
+            "params": {
+              "template": "submit",
+              "region": [
+                837,
+                216,
+                868,
+                816
+              ],
+              "confidence": 0.98
+            }
+          },
+          {
+            "id": "s_if_send1",
+            "type": "if",
+            "name": "能否发送",
+            "enabled": true,
+            "breakpoint": false,
+            "params": {
+              "condition": "found == True",
+              "then": [
+                {
+                  "id": "s_click_send1",
+                  "type": "click",
+                  "name": "点击发送",
+                  "enabled": true,
+                  "breakpoint": false,
+                  "params": {
+                    "position": {
+                      "type": "variable",
+                      "var": "match_pos"
+                    },
+                    "button": "left",
+                    "clicks": 1
+                  }
+                },
+                {
+                  "id": "s_wait_busy1",
+                  "type": "wait",
+                  "name": "等一下看是否出现busy",
+                  "enabled": true,
+                  "breakpoint": false,
+                  "params": {"mode": "fixed", "seconds": 2}
+                },
+                {
+                  "id": "s_find_busy1",
+                  "type": "find_image",
+                  "name": "查找busy图标",
+                  "enabled": true,
+                  "breakpoint": false,
+                  "params": {"template": "busy", "region": null, "confidence": null}
+                },
+                {
+                  "id": "s_if_busy1",
+                  "type": "if",
+                  "name": "服务器是否繁忙",
+                  "enabled": true,
+                  "breakpoint": false,
+                  "params": {
+                    "condition": "found == True",
+                    "then": [
+                      {
+                        "id": "s_click_busy1",
+                        "type": "click",
+                        "name": "点击busy图标",
+                        "enabled": true,
+                        "breakpoint": false,
+                        "params": {"position": {"type": "variable", "var": "match_pos"}, "button": "left", "clicks": 1}
+                      },
+                      {"id": "s_wait_busy1b", "type": "wait", "name": "等3秒", "enabled": true, "breakpoint": false, "params": {"mode": "fixed", "seconds": 3}},
+                      {"id": "s_find_busy1b", "type": "find_image", "name": "再查busy", "enabled": true, "breakpoint": false, "params": {"template": "busy", "region": null, "confidence": null}},
+                      {
+                        "id": "s_if_busy1b",
+                        "type": "if",
+                        "name": "busy还在吗",
+                        "enabled": true,
+                        "breakpoint": false,
+                        "params": {
+                          "condition": "found == True",
+                          "then": [
+                            {"id": "s_click_busy1b", "type": "click", "name": "再点busy", "enabled": true, "breakpoint": false, "params": {"position": {"type": "variable", "var": "match_pos"}, "button": "left", "clicks": 1}},
+                            {"id": "s_wait_busy1c", "type": "wait", "name": "再等3秒", "enabled": true, "breakpoint": false, "params": {"mode": "fixed", "seconds": 3}},
+                            {"id": "s_find_busy1c", "type": "find_image", "name": "再查busy", "enabled": true, "breakpoint": false, "params": {"template": "busy", "region": null, "confidence": null}},
+                            {
+                              "id": "s_if_busy1c",
+                              "type": "if",
+                              "name": "busy还在吗",
+                              "enabled": true,
+                              "breakpoint": false,
+                              "params": {
+                                "condition": "found == True",
+                                "then": [
+                                  {"id": "s_click_busy1c", "type": "click", "name": "再点busy", "enabled": true, "breakpoint": false, "params": {"position": {"type": "variable", "var": "match_pos"}, "button": "left", "clicks": 1}},
+                                  {"id": "s_wait_busy1d", "type": "wait", "name": "再等3秒", "enabled": true, "breakpoint": false, "params": {"mode": "fixed", "seconds": 3}},
+                                  {"id": "s_find_busy1d", "type": "find_image", "name": "再查busy", "enabled": true, "breakpoint": false, "params": {"template": "busy", "region": null, "confidence": null}},
+                                  {
+                                    "id": "s_if_busy1d",
+                                    "type": "if",
+                                    "name": "busy还在吗",
+                                    "enabled": true,
+                                    "breakpoint": false,
+                                    "params": {
+                                      "condition": "found == True",
+                                      "then": [
+                                        {"id": "s_click_busy1d", "type": "click", "name": "再点busy", "enabled": true, "breakpoint": false, "params": {"position": {"type": "variable", "var": "match_pos"}, "button": "left", "clicks": 1}},
+                                        {"id": "s_wait_busy1e", "type": "wait", "name": "再等3秒", "enabled": true, "breakpoint": false, "params": {"mode": "fixed", "seconds": 3}}
+                                      ],
+                                      "else": []
+                                    }
+                                  }
+                                ],
+                                "else": []
+                              }
+                            }
+                          ],
+                          "else": []
+                        }
+                      }
+                    ],
+                    "else": []
+                  }
+                }
+              ],
+              "else": [
+                {
+                  "id": "s_log_nosubmit1",
+                  "type": "log",
+                  "name": "日志",
+                  "enabled": true,
+                  "breakpoint": false,
+                  "params": {
+                    "message": "发送按钮不可用，跳过",
+                    "level": "warning"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "id": "s_wait_reply1",
+            "type": "wait",
+            "name": "等待DeepSeek回复完成",
+            "enabled": true,
+            "breakpoint": false,
+            "params": {
+              "mode": "until_image",
+              "template": "submit",
+              "region": [
+                850,
+                209,
+                873,
+                823
+              ],
+              "timeout": 300.0,
+              "poll_interval": 3.0,
+              "confidence": 0.98,
+              "seconds": 1.0
+            }
+          },
+          {
+            "id": "s_paste_t2",
+            "type": "paste",
+            "name": "粘贴第二个模板",
+            "enabled": true,
+            "breakpoint": false,
+            "params": {
+              "text": "那适合4%网格吗？根据最新的国际国内市场信息和客观的事实数据分析，不要瞎编，不要偷懒，不少于2000字，仔细地多维度分析和以表格形式做输出，总结的维度和权重参考如下\n\n维度（权重）\t得分\t加权得分\t详细依据\n波动性与触发频率（20%）\t/100\t\t\n基本面与估值安全垫（25%）\t/100\t\t\n尾部与方向风险（25%）\t/100\t\t\n流动性（15%）\t/100\t\t\n融资盘风险（7%）\t/100\t\t\n机构覆盖（8%）\t/100\t\t\n加权总分\t\t/100",
+              "delay_after_copy": 0.2
+            }
+          },
+          {
+            "id": "s_find_submit2",
+            "type": "find_image",
+            "name": "查找发送按钮",
+            "enabled": true,
+            "breakpoint": false,
+            "params": {
+              "template": "submit",
+              "region": [
+                854,
+                216,
+                860,
+                800
+              ],
+              "confidence": 0.98
+            }
+          },
+          {
+            "id": "s_if_send2",
+            "type": "if",
+            "name": "能否发送",
+            "enabled": true,
+            "breakpoint": false,
+            "params": {
+              "condition": "found == True",
+              "then": [
+                {
+                  "id": "s_click_send2",
+                  "type": "click",
+                  "name": "点击发送",
+                  "enabled": true,
+                  "breakpoint": false,
+                  "params": {
+                    "position": {
+                      "type": "variable",
+                      "var": "match_pos"
+                    },
+                    "button": "left",
+                    "clicks": 1
+                  }
+                },
+                {
+                  "id": "s_wait_busy2",
+                  "type": "wait",
+                  "name": "等一下看是否出现busy",
+                  "enabled": true,
+                  "breakpoint": false,
+                  "params": {"mode": "fixed", "seconds": 2}
+                },
+                {
+                  "id": "s_find_busy2",
+                  "type": "find_image",
+                  "name": "查找busy图标",
+                  "enabled": true,
+                  "breakpoint": false,
+                  "params": {"template": "busy", "region": null, "confidence": null}
+                },
+                {
+                  "id": "s_if_busy2",
+                  "type": "if",
+                  "name": "服务器是否繁忙",
+                  "enabled": true,
+                  "breakpoint": false,
+                  "params": {
+                    "condition": "found == True",
+                    "then": [
+                      {
+                        "id": "s_click_busy2",
+                        "type": "click",
+                        "name": "点击busy图标",
+                        "enabled": true,
+                        "breakpoint": false,
+                        "params": {"position": {"type": "variable", "var": "match_pos"}, "button": "left", "clicks": 1}
+                      },
+                      {"id": "s_wait_busy2b", "type": "wait", "name": "等3秒", "enabled": true, "breakpoint": false, "params": {"mode": "fixed", "seconds": 3}},
+                      {"id": "s_find_busy2b", "type": "find_image", "name": "再查busy", "enabled": true, "breakpoint": false, "params": {"template": "busy", "region": null, "confidence": null}},
+                      {
+                        "id": "s_if_busy2b",
+                        "type": "if",
+                        "name": "busy还在吗",
+                        "enabled": true,
+                        "breakpoint": false,
+                        "params": {
+                          "condition": "found == True",
+                          "then": [
+                            {"id": "s_click_busy2b", "type": "click", "name": "再点busy", "enabled": true, "breakpoint": false, "params": {"position": {"type": "variable", "var": "match_pos"}, "button": "left", "clicks": 1}},
+                            {"id": "s_wait_busy2c", "type": "wait", "name": "再等3秒", "enabled": true, "breakpoint": false, "params": {"mode": "fixed", "seconds": 3}},
+                            {"id": "s_find_busy2c", "type": "find_image", "name": "再查busy", "enabled": true, "breakpoint": false, "params": {"template": "busy", "region": null, "confidence": null}},
+                            {
+                              "id": "s_if_busy2c",
+                              "type": "if",
+                              "name": "busy还在吗",
+                              "enabled": true,
+                              "breakpoint": false,
+                              "params": {
+                                "condition": "found == True",
+                                "then": [
+                                  {"id": "s_click_busy2c", "type": "click", "name": "再点busy", "enabled": true, "breakpoint": false, "params": {"position": {"type": "variable", "var": "match_pos"}, "button": "left", "clicks": 1}},
+                                  {"id": "s_wait_busy2d", "type": "wait", "name": "再等3秒", "enabled": true, "breakpoint": false, "params": {"mode": "fixed", "seconds": 3}},
+                                  {"id": "s_find_busy2d", "type": "find_image", "name": "再查busy", "enabled": true, "breakpoint": false, "params": {"template": "busy", "region": null, "confidence": null}},
+                                  {
+                                    "id": "s_if_busy2d",
+                                    "type": "if",
+                                    "name": "busy还在吗",
+                                    "enabled": true,
+                                    "breakpoint": false,
+                                    "params": {
+                                      "condition": "found == True",
+                                      "then": [
+                                        {"id": "s_click_busy2d", "type": "click", "name": "再点busy", "enabled": true, "breakpoint": false, "params": {"position": {"type": "variable", "var": "match_pos"}, "button": "left", "clicks": 1}},
+                                        {"id": "s_wait_busy2e", "type": "wait", "name": "再等3秒", "enabled": true, "breakpoint": false, "params": {"mode": "fixed", "seconds": 3}}
+                                      ],
+                                      "else": []
+                                    }
+                                  }
+                                ],
+                                "else": []
+                              }
+                            }
+                          ],
+                          "else": []
+                        }
+                      }
+                    ],
+                    "else": []
+                  }
+                }
+              ],
+              "else": [
+                {
+                  "id": "s_log_nosubmit2",
+                  "type": "log",
+                  "name": "日志",
+                  "enabled": true,
+                  "breakpoint": false,
+                  "params": {
+                    "message": "发送按钮不可用，跳过",
+                    "level": "warning"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "id": "s_wait_reply2",
+            "type": "wait",
+            "name": "等待DeepSeek回复完成",
+            "enabled": true,
+            "breakpoint": false,
+            "params": {
+              "mode": "until_image",
+              "template": "submit",
+              "region": [
+                788,
+                178,
+                930,
+                847
+              ],
+              "timeout": 300.0,
+              "poll_interval": 3.0,
+              "confidence": 0.98,
+              "seconds": 1.0
+            }
+          },
+          {
+            "id": "s_log_done",
+            "type": "log",
+            "name": "记录完成",
+            "enabled": true,
+            "breakpoint": false,
+            "params": {
+              "message": "${item} 分析完成",
+              "level": "info"
+            }
+          }
+        ]
       }
     }
   ],
@@ -92,6 +742,12 @@
           "file": "v2.png",
           "confidence": 0.7,
           "added_at": "2026-05-20",
+          "note": ""
+        },
+        {
+          "file": "v3.png",
+          "confidence": 0.7,
+          "added_at": "2026-05-27",
           "note": ""
         }
       ],
@@ -120,6 +776,172 @@
         44,
         33
       ],
+      "default_confidence": 0.7,
+      "match_strategy": "first_hit"
+    },
+    "edge": {
+      "name": "edge",
+      "variants": [
+        {
+          "file": "v1.png",
+          "confidence": 0.7,
+          "added_at": "2026-05-26",
+          "note": ""
+        },
+        {
+          "file": "v2.png",
+          "confidence": 0.7,
+          "added_at": "2026-05-26",
+          "note": ""
+        }
+      ],
+      "default_region": [
+        541,
+        1035,
+        49,
+        37
+      ],
+      "default_confidence": 0.7,
+      "match_strategy": "first_hit"
+    },
+    "expert": {
+      "name": "expert",
+      "variants": [
+        {
+          "file": "v1.png",
+          "confidence": 0.7,
+          "added_at": "2026-05-22",
+          "note": ""
+        }
+      ],
+      "default_region": [
+        1093,
+        474,
+        134,
+        40
+      ],
+      "default_confidence": 0.7,
+      "match_strategy": "first_hit"
+    },
+    "google": {
+      "name": "google",
+      "variants": [
+        {
+          "file": "v2.png",
+          "confidence": 0.7,
+          "added_at": "2026-05-20",
+          "note": ""
+        },
+        {
+          "file": "v3.png",
+          "confidence": 0.7,
+          "added_at": "2026-05-20",
+          "note": ""
+        }
+      ],
+      "default_region": null,
+      "default_confidence": 0.7,
+      "match_strategy": "first_hit"
+    },
+    "inputBox": {
+      "name": "inputBox",
+      "variants": [
+        {
+          "file": "v1.png",
+          "confidence": 0.7,
+          "added_at": "2026-05-22",
+          "note": ""
+        },
+        {
+          "file": "v2.png",
+          "confidence": 0.7,
+          "added_at": "2026-05-22",
+          "note": ""
+        }
+      ],
+      "default_region": [
+        700,
+        547,
+        495,
+        67
+      ],
+      "default_confidence": 0.5,
+      "match_strategy": "first_hit"
+    },
+    "runing": {
+      "name": "runing",
+      "variants": [
+        {
+          "file": "v2.png",
+          "confidence": 0.7,
+          "added_at": "2026-05-22",
+          "note": ""
+        }
+      ],
+      "default_region": [
+        1416,
+        951,
+        75,
+        51
+      ],
+      "default_confidence": 0.7,
+      "match_strategy": "first_hit"
+    },
+    "submit": {
+      "name": "submit",
+      "variants": [
+        {
+          "file": "v1.png",
+          "confidence": 0.7,
+          "added_at": "2026-05-22",
+          "note": ""
+        },
+        {
+          "file": "v2.png",
+          "confidence": 0.7,
+          "added_at": "2026-05-22",
+          "note": ""
+        }
+      ],
+      "default_region": [
+        1416,
+        666,
+        79,
+        51
+      ],
+      "default_confidence": 0.7,
+      "match_strategy": "first_hit"
+    },
+    "thinking": {
+      "name": "thinking",
+      "variants": [
+        {
+          "file": "v2.png",
+          "confidence": 0.7,
+          "added_at": "2026-05-22",
+          "note": ""
+        }
+      ],
+      "default_region": [
+        714,
+        625,
+        114,
+        37
+      ],
+      "default_confidence": 0.7,
+      "match_strategy": "first_hit"
+    },
+    "busy": {
+      "name": "busy",
+      "variants": [
+        {
+          "file": "busy.png",
+          "confidence": 0.7,
+          "added_at": "2026-05-27",
+          "note": ""
+        }
+      ],
+      "default_region": null,
       "default_confidence": 0.7,
       "match_strategy": "first_hit"
     }

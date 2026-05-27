@@ -1,0 +1,14 @@
+{
+  "name": "busy",
+  "variants": [
+    {
+      "file": "busy.png",
+      "confidence": 0.7,
+      "added_at": "2026-05-27",
+      "note": ""
+    }
+  ],
+  "default_region": null,
+  "default_confidence": 0.7,
+  "match_strategy": "first_hit"
+}

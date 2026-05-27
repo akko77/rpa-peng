@@ -1,0 +1,19 @@
+{
+  "name": "runing",
+  "variants": [
+    {
+      "file": "v2.png",
+      "confidence": 0.7,
+      "added_at": "2026-05-22",
+      "note": ""
+    }
+  ],
+  "default_region": [
+    1416,
+    951,
+    75,
+    51
+  ],
+  "default_confidence": 0.7,
+  "match_strategy": "first_hit"
+}

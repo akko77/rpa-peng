@@ -171,8 +171,14 @@ class WorkflowSettings:
     default_step_timeout: float = 10.0
     failure_policy: str = "continue"
     retry_max: int = 2
+    retry_delay_sec: float = 3.0
     record_merge_threshold_sec: float = 1.5
     record_idle_to_wait_sec: float = 1.5
+    browser: Dict[str, Any] = field(default_factory=lambda: {
+        "headless": False,
+        "browser_type": "chromium",
+        "user_data_dir": None,
+    })
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -183,15 +189,20 @@ class WorkflowSettings:
             "default_step_timeout": self.default_step_timeout,
             "failure_policy": self.failure_policy,
             "retry_max": self.retry_max,
+            "retry_delay_sec": self.retry_delay_sec,
             "record_merge_threshold_sec": self.record_merge_threshold_sec,
             "record_idle_to_wait_sec": self.record_idle_to_wait_sec,
+            "browser": self.browser,
         }
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "WorkflowSettings":
         if not data:
             return cls()
-        return cls(**{k: v for k, v in data.items() if k in cls.__dataclass_fields__})
+        known = {k: v for k, v in data.items() if k in cls.__dataclass_fields__}
+        if "browser" in data:
+            known["browser"] = data["browser"]
+        return cls(**known)
 
 
 # ---------------------- Step ----------------------
