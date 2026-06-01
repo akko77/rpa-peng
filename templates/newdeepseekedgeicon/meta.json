@@ -1,0 +1,19 @@
+{
+  "name": "newdeepseekedgeicon",
+  "variants": [
+    {
+      "file": "v1.png",
+      "confidence": 0.7,
+      "added_at": "2026-05-28",
+      "note": ""
+    }
+  ],
+  "default_region": [
+    33,
+    7,
+    36,
+    27
+  ],
+  "default_confidence": 0.7,
+  "match_strategy": "first_hit"
+}

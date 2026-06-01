@@ -778,6 +778,51 @@ class LoopDataForm(_BaseForm):
             p["body"] = []
 
 
+class WhileLoopForm(_BaseForm):
+    def __init__(self):
+        super().__init__()
+        form = QFormLayout(self)
+        self.condition = QLineEdit()
+        self.condition.setPlaceholderText("Python 表达式，为真时继续循环。如: found == False / retry_count < 5")
+        self.condition.textChanged.connect(lambda *_: self.changed.emit())
+        form.addRow("循环条件:", self.condition)
+
+        self.max_iterations = QSpinBox()
+        self.max_iterations.setRange(1, 999999)
+        self.max_iterations.setValue(100)
+        self.max_iterations.valueChanged.connect(lambda *_: self.changed.emit())
+        form.addRow("最大循环次数:", self.max_iterations)
+
+        self.interval_sec = QDoubleSpinBox()
+        self.interval_sec.setRange(0.0, 3600.0)
+        self.interval_sec.setSingleStep(0.5)
+        self.interval_sec.setDecimals(2)
+        self.interval_sec.setValue(1.0)
+        self.interval_sec.valueChanged.connect(lambda *_: self.changed.emit())
+        form.addRow("每次间隔(秒):", self.interval_sec)
+
+        info = QLabel("循环体步骤通过左侧步骤列表点开 while_loop 节点编辑。\n"
+                      "条件支持: 变量(found/retry_count)、item、比较/逻辑运算。\n"
+                      "达到最大次数后自动退出循环，防止死循环。")
+        info.setStyleSheet("color:#888;")
+        info.setWordWrap(True)
+        form.addRow("", info)
+
+    def load(self, p: Dict[str, Any]) -> None:
+        self.condition.setText(str(p.get("condition", "") or ""))
+        self.max_iterations.setValue(int(p.get("max_iterations", 100) or 100))
+        self.interval_sec.setValue(float(p.get("interval_sec", 1.0) or 1.0))
+        if "body" not in p:
+            p["body"] = []
+
+    def write_to(self, p: Dict[str, Any]) -> None:
+        p["condition"] = self.condition.text()
+        p["max_iterations"] = self.max_iterations.value()
+        p["interval_sec"] = self.interval_sec.value()
+        if "body" not in p:
+            p["body"] = []
+
+
 class EmptyForm(_BaseForm):
     """Form for break/continue: no params."""
     def __init__(self, info_text: str = ""):
@@ -1135,6 +1180,7 @@ FORM_CLASSES: Dict[str, type] = {
     "focus_window": FocusWindowForm,
     "if": IfForm,
     "loop_data": LoopDataForm,
+    "while_loop": WhileLoopForm,
     "break": BreakForm,
     "continue": ContinueForm,
     "browser_goto": BrowserGotoForm,

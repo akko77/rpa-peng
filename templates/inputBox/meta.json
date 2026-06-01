@@ -12,6 +12,18 @@
       "confidence": 0.7,
       "added_at": "2026-05-22",
       "note": ""
+    },
+    {
+      "file": "v3.png",
+      "confidence": 0.5,
+      "added_at": "2026-05-29",
+      "note": ""
+    },
+    {
+      "file": "v4.png",
+      "confidence": 0.5,
+      "added_at": "2026-05-29",
+      "note": ""
     }
   ],
   "default_region": [

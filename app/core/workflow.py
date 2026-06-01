@@ -19,6 +19,7 @@ def new_step_id() -> str:
 # Step types whose params contain nested step lists. Map type -> tuple of param keys.
 NESTED_BODY_FIELDS: Dict[str, Tuple[str, ...]] = {
     "loop_data": ("body",),
+    "while_loop": ("body",),
     "if": ("then", "else"),
 }
 

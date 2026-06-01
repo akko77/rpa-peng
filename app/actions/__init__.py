@@ -11,7 +11,7 @@ from .set_variable import SetVariableAction
 from .log import LogAction
 from .find_image import FindImageAction
 from .focus_window import FocusWindowAction
-from .control_flow import LoopDataAction, IfAction, BreakAction, ContinueAction
+from .control_flow import LoopDataAction, WhileLoopAction, IfAction, BreakAction, ContinueAction
 from .browser_goto import BrowserGotoAction
 from .browser_click import BrowserClickAction
 from .browser_fill import BrowserFillAction
@@ -35,7 +35,7 @@ for cls in (
     FindImageAction,
     FocusWindowAction,
     SetVariableAction, LogAction,
-    LoopDataAction, IfAction, BreakAction, ContinueAction,
+    LoopDataAction, WhileLoopAction, IfAction, BreakAction, ContinueAction,
     BrowserGotoAction, BrowserClickAction, BrowserFillAction,
     BrowserPressAction, BrowserEvalAction, BrowserWaitForAction,
     BrowserScreenshotAction, BrowserExtractAction,
@@ -43,7 +43,7 @@ for cls in (
     _register(cls)
 
 
-CONTROL_FLOW_TYPES = {"loop_data", "if", "break", "continue"}
+CONTROL_FLOW_TYPES = {"loop_data", "while_loop", "if", "break", "continue"}
 
 
 def get_action(type_name: str) -> Optional[ActionBase]:

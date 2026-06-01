@@ -54,6 +54,24 @@ class IfAction(ActionBase):
         return ActionResult(False, "if must be handled by the executor")
 
 
+class WhileLoopAction(ActionBase):
+    type_name = "while_loop"
+    display_name = "循环 (条件)"
+    description = "当条件为真时重复执行子步骤体（body），支持最大次数限制防止死循环"
+
+    @classmethod
+    def default_params(cls) -> Dict[str, Any]:
+        return {
+            "condition": "",
+            "max_iterations": 100,
+            "interval_sec": 1.0,
+            "body": [],
+        }
+
+    def execute(self, params: Dict[str, Any], context) -> ActionResult:
+        return ActionResult(False, "while_loop must be handled by the executor")
+
+
 class BreakAction(ActionBase):
     type_name = "break"
     display_name = "break"

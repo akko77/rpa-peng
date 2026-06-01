@@ -1,7 +1,7 @@
 {
   "name": "stockanalysis",
-  "description": "自动打开DeepSeek，开启专家/思考模式，循环读取Excel公司列表，逐个发送模板提问",
-  "version": "0.2",
+  "description": "双浏览器并行：Chrome和Edge同时运行DeepSeek，循环读取Excel公司列表，交替发送模板提问",
+  "version": "0.3",
   "variables": {},
   "settings": {
     "short_pause_sec": 360,
@@ -22,9 +22,9 @@
   },
   "steps": [
     {
-      "id": "s_5927cbf5",
+      "id": "s_find_chrome_tab",
       "type": "find_image",
-      "name": "看deepseek标签页是否存在",
+      "name": "看Chrome中deepseek标签页是否存在",
       "enabled": true,
       "breakpoint": false,
       "params": {
@@ -39,18 +39,18 @@
       }
     },
     {
-      "id": "s_7dd0e8ae",
+      "id": "s_if_chrome_tab",
       "type": "if",
-      "name": "条件分支",
+      "name": "Chrome中deepseek标签页是否存在",
       "enabled": true,
       "breakpoint": false,
       "params": {
         "condition": "found == False",
         "then": [
           {
-            "id": "s_347a8035",
+            "id": "s_find_chrome_taskbar",
             "type": "find_image",
-            "name": "找google",
+            "name": "找Chrome图标",
             "enabled": true,
             "breakpoint": false,
             "params": {
@@ -65,18 +65,18 @@
             }
           },
           {
-            "id": "s_0bc933a6",
+            "id": "s_if_chrome_taskbar",
             "type": "if",
-            "name": "条件分支",
+            "name": "Chrome是否在任务栏",
             "enabled": true,
             "breakpoint": false,
             "params": {
               "condition": "found == True",
               "then": [
                 {
-                  "id": "s_d60aec07",
+                  "id": "s_click_chrome_taskbar",
                   "type": "click",
-                  "name": "进入浏览器",
+                  "name": "点击Chrome图标",
                   "enabled": true,
                   "breakpoint": false,
                   "params": {
@@ -89,9 +89,9 @@
                   }
                 },
                 {
-                  "id": "s_f5ded01d",
+                  "id": "s_find_chrome_tab2",
                   "type": "find_image",
-                  "name": "看deepseek标签页是否存在",
+                  "name": "再找deepseek标签页",
                   "enabled": true,
                   "breakpoint": false,
                   "params": {
@@ -106,18 +106,18 @@
                   }
                 },
                 {
-                  "id": "s_30ee53ba",
+                  "id": "s_if_chrome_tab2",
                   "type": "if",
-                  "name": "条件分支",
+                  "name": "deepseek标签页是否存在",
                   "enabled": true,
                   "breakpoint": false,
                   "params": {
                     "condition": "found == True",
                     "then": [
                       {
-                        "id": "s_8b14a4d2",
+                        "id": "s_click_chrome_ds_tab",
                         "type": "click",
-                        "name": "进入deepseek页面",
+                        "name": "点击deepseek标签页",
                         "enabled": true,
                         "breakpoint": false,
                         "params": {
@@ -136,7 +136,7 @@
               ],
               "else": [
                 {
-                  "id": "s_756d9ec5",
+                  "id": "s_log_no_chrome",
                   "type": "log",
                   "name": "日志",
                   "enabled": true,
@@ -147,7 +147,7 @@
                   }
                 },
                 {
-                  "id": "s_9e2bee82",
+                  "id": "s_break_no_chrome",
                   "type": "break",
                   "name": "break",
                   "enabled": true,
@@ -160,9 +160,9 @@
         ],
         "else": [
           {
-            "id": "s_cb812ef5",
+            "id": "s_click_chrome_ds_tab_exist",
             "type": "click",
-            "name": "进入deepseek页面",
+            "name": "点击deepseek标签页",
             "enabled": true,
             "breakpoint": false,
             "params": {
@@ -178,9 +178,9 @@
       }
     },
     {
-      "id": "s_wait_load",
+      "id": "s_wait_chrome_load",
       "type": "wait",
-      "name": "等页面加载",
+      "name": "等Chrome页面加载",
       "enabled": true,
       "breakpoint": false,
       "params": {
@@ -189,9 +189,9 @@
       }
     },
     {
-      "id": "s_find_expert",
+      "id": "s_find_expert_chrome",
       "type": "find_image",
-      "name": "查找专家模式按钮",
+      "name": "查找Chrome专家模式按钮",
       "enabled": true,
       "breakpoint": false,
       "params": {
@@ -206,18 +206,18 @@
       }
     },
     {
-      "id": "s_if_expert",
+      "id": "s_if_expert_chrome",
       "type": "if",
-      "name": "专家模式是否已开启",
+      "name": "Chrome专家模式是否已开启",
       "enabled": true,
       "breakpoint": false,
       "params": {
         "condition": "found == True",
         "then": [
           {
-            "id": "s_click_expert",
+            "id": "s_click_expert_chrome",
             "type": "click",
-            "name": "点击开启专家模式",
+            "name": "点击开启Chrome专家模式",
             "enabled": true,
             "breakpoint": false,
             "params": {
@@ -234,9 +234,9 @@
       }
     },
     {
-      "id": "s_wait_expert",
+      "id": "s_wait_expert_chrome",
       "type": "wait",
-      "name": "等专家模式生效",
+      "name": "等Chrome专家模式生效",
       "enabled": true,
       "breakpoint": false,
       "params": {
@@ -245,9 +245,9 @@
       }
     },
     {
-      "id": "s_find_thinking",
+      "id": "s_find_thinking_chrome",
       "type": "find_image",
-      "name": "查找思考模式按钮",
+      "name": "查找Chrome思考模式按钮",
       "enabled": true,
       "breakpoint": false,
       "params": {
@@ -262,18 +262,258 @@
       }
     },
     {
-      "id": "s_if_thinking",
+      "id": "s_if_thinking_chrome",
       "type": "if",
-      "name": "思考模式是否已开启",
+      "name": "Chrome思考模式是否已开启",
       "enabled": true,
       "breakpoint": false,
       "params": {
         "condition": "found == True",
         "then": [
           {
-            "id": "s_click_thinking",
+            "id": "s_click_thinking_chrome",
             "type": "click",
-            "name": "点击开启思考模式",
+            "name": "点击开启Chrome思考模式",
+            "enabled": true,
+            "breakpoint": false,
+            "params": {
+              "position": {
+                "type": "variable",
+                "var": "match_pos"
+              },
+              "button": "left",
+              "clicks": 1
+            }
+          },
+          {
+            "id": "s_f004341b",
+            "type": "click",
+            "name": "点击",
+            "enabled": true,
+            "breakpoint": false,
+            "params": {
+              "position": {
+                "type": "fixed",
+                "x": 540,
+                "y": 940
+              },
+              "button": "left",
+              "clicks": 1
+            }
+          }
+        ],
+        "else": []
+      }
+    },
+    {
+      "id": "s_wait_thinking_chrome",
+      "type": "wait",
+      "name": "等Chrome思考模式生效",
+      "enabled": true,
+      "breakpoint": false,
+      "params": {
+        "mode": "fixed",
+        "seconds": 1
+      }
+    },
+    {
+      "id": "s_find_chrome_input_setup",
+      "type": "find_image",
+      "name": "查找Chrome输入框",
+      "enabled": true,
+      "breakpoint": false,
+      "params": {
+        "template": "inputBox",
+        "region": [
+          404,
+          204,
+          1354,
+          837
+        ],
+        "confidence": 0.4
+      }
+    },
+    {
+      "id": "s_click_chrome_input_setup",
+      "type": "click",
+      "name": "点击Chrome输入框",
+      "enabled": true,
+      "breakpoint": false,
+      "params": {
+        "position": {
+          "type": "variable",
+          "var": "match_pos"
+        },
+        "button": "left",
+        "clicks": 2
+      }
+    },
+    {
+      "id": "s_find_edge_taskbar",
+      "type": "find_image",
+      "name": "查找Edge图标",
+      "enabled": true,
+      "breakpoint": false,
+      "params": {
+        "template": "edge",
+        "region": [
+          38,
+          1031,
+          1442,
+          48
+        ],
+        "confidence": null
+      }
+    },
+    {
+      "id": "s_if_edge_taskbar",
+      "type": "if",
+      "name": "Edge是否在任务栏",
+      "enabled": true,
+      "breakpoint": false,
+      "params": {
+        "condition": "found == True",
+        "then": [
+          {
+            "id": "s_click_edge_taskbar",
+            "type": "click",
+            "name": "点击Edge图标",
+            "enabled": true,
+            "breakpoint": false,
+            "params": {
+              "position": {
+                "type": "variable",
+                "var": "match_pos"
+              },
+              "button": "left",
+              "clicks": 1
+            }
+          }
+        ],
+        "else": [
+          {
+            "id": "s_log_no_edge",
+            "type": "log",
+            "name": "日志",
+            "enabled": true,
+            "breakpoint": false,
+            "params": {
+              "message": "没有找到Edge浏览器，请确保Edge在任务栏",
+              "level": "warning"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "s_wait_edge_load",
+      "type": "wait",
+      "name": "等Edge加载",
+      "enabled": true,
+      "breakpoint": false,
+      "params": {
+        "mode": "fixed",
+        "seconds": 3
+      }
+    },
+    {
+      "id": "s_find_edge_ds_tab",
+      "type": "find_image",
+      "name": "查找Edge中deepseek标签页",
+      "enabled": true,
+      "breakpoint": false,
+      "params": {
+        "template": "newdeepseekedgeicon",
+        "region": [
+          2,
+          0,
+          419,
+          45
+        ],
+        "confidence": null
+      }
+    },
+    {
+      "id": "s_if_edge_ds_tab",
+      "type": "if",
+      "name": "Edge中deepseek标签页是否存在",
+      "enabled": true,
+      "breakpoint": false,
+      "params": {
+        "condition": "found == True",
+        "then": [
+          {
+            "id": "s_click_edge_ds_tab",
+            "type": "click",
+            "name": "点击Edge中deepseek标签页",
+            "enabled": true,
+            "breakpoint": false,
+            "params": {
+              "position": {
+                "type": "variable",
+                "var": "match_pos"
+              },
+              "button": "left",
+              "clicks": 1
+            }
+          }
+        ],
+        "else": [
+          {
+            "id": "s_log_no_edge_ds",
+            "type": "log",
+            "name": "日志",
+            "enabled": true,
+            "breakpoint": false,
+            "params": {
+              "message": "Edge中没有找到DeepSeek标签页，请先在Edge中打开DeepSeek",
+              "level": "warning"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "s_wait_edge_ds_load",
+      "type": "wait",
+      "name": "等Edge DeepSeek页面加载",
+      "enabled": true,
+      "breakpoint": false,
+      "params": {
+        "mode": "fixed",
+        "seconds": 3
+      }
+    },
+    {
+      "id": "s_find_expert_edge",
+      "type": "find_image",
+      "name": "查找Edge专家模式按钮",
+      "enabled": true,
+      "breakpoint": false,
+      "params": {
+        "template": "expert",
+        "region": [
+          421,
+          130,
+          1473,
+          906
+        ],
+        "confidence": null
+      }
+    },
+    {
+      "id": "s_if_expert_edge",
+      "type": "if",
+      "name": "Edge专家模式是否已开启",
+      "enabled": true,
+      "breakpoint": false,
+      "params": {
+        "condition": "found == True",
+        "then": [
+          {
+            "id": "s_click_expert_edge",
+            "type": "click",
+            "name": "点击开启Edge专家模式",
             "enabled": true,
             "breakpoint": false,
             "params": {
@@ -290,9 +530,9 @@
       }
     },
     {
-      "id": "s_wait_thinking",
+      "id": "s_wait_expert_edge",
       "type": "wait",
-      "name": "等思考模式生效",
+      "name": "等Edge专家模式生效",
       "enabled": true,
       "breakpoint": false,
       "params": {
@@ -301,35 +541,120 @@
       }
     },
     {
-      "id": "s_find_input",
+      "id": "s_find_thinking_edge",
       "type": "find_image",
-      "name": "查找输入框",
+      "name": "查找Edge思考模式按钮",
       "enabled": true,
       "breakpoint": false,
       "params": {
-        "template": "inputBox",
+        "template": "thinking",
         "region": [
-          404,
-          204,
-          1354,
-          837
+          592,
+          129,
+          1102,
+          900
         ],
-        "confidence": 0.4
+        "confidence": 0.98
       }
     },
     {
-      "id": "s_click_input",
-      "type": "click",
-      "name": "点击输入框",
+      "id": "s_if_thinking_edge",
+      "type": "if",
+      "name": "Edge思考模式是否已开启",
       "enabled": true,
       "breakpoint": false,
       "params": {
-        "position": {
-          "type": "variable",
-          "var": "match_pos"
-        },
-        "button": "left",
-        "clicks": 2
+        "condition": "found == True",
+        "then": [
+          {
+            "id": "s_click_thinking_edge",
+            "type": "click",
+            "name": "点击开启Edge思考模式",
+            "enabled": true,
+            "breakpoint": false,
+            "params": {
+              "position": {
+                "type": "variable",
+                "var": "match_pos"
+              },
+              "button": "left",
+              "clicks": 1
+            }
+          },
+          {
+            "id": "s_66843d14",
+            "type": "click",
+            "name": "点击",
+            "enabled": true,
+            "breakpoint": false,
+            "params": {
+              "position": {
+                "type": "fixed",
+                "x": 543,
+                "y": 940
+              },
+              "button": "left",
+              "clicks": 1
+            }
+          }
+        ],
+        "else": []
+      }
+    },
+    {
+      "id": "s_wait_thinking_edge",
+      "type": "wait",
+      "name": "等Edge思考模式生效",
+      "enabled": true,
+      "breakpoint": false,
+      "params": {
+        "mode": "fixed",
+        "seconds": 1
+      }
+    },
+    {
+      "id": "s_76f02dcf",
+      "type": "find_image",
+      "name": "找Chrome图标",
+      "enabled": true,
+      "breakpoint": false,
+      "params": {
+        "template": "googlechrome",
+        "region": [
+          5,
+          1034,
+          1592,
+          45
+        ],
+        "confidence": null
+      }
+    },
+    {
+      "id": "s_2588a139",
+      "type": "if",
+      "name": "Chrome是否在任务栏",
+      "enabled": true,
+      "breakpoint": false,
+      "params": {
+        "condition": "found == True",
+        "then": [
+          {
+            "id": "s_f87d8967",
+            "type": "click",
+            "name": "点击Chrome图标",
+            "enabled": true,
+            "breakpoint": false,
+            "params": {
+              "position": {
+                "type": "variable",
+                "var": "match_pos"
+              },
+              "button": "left",
+              "clicks": 1
+            }
+          }
+        ],
+        "else": []
       }
     },
     {
@@ -364,9 +689,62 @@
             }
           },
           {
-            "id": "s_paste_t1",
+            "id": "s_find_chrome_input_t1",
+            "type": "find_image",
+            "name": "查找Chrome输入框",
+            "enabled": true,
+            "breakpoint": false,
+            "params": {
+              "template": "inputBox",
+              "region": [
+                404,
+                204,
+                1354,
+                837
+              ],
+              "confidence": 0.4
+            }
+          },
+          {
+            "id": "s_36ae6556",
+            "type": "wait",
+            "name": "等待回复完成",
+            "enabled": true,
+            "breakpoint": false,
+            "params": {
+              "mode": "until_image",
+              "template": "submit",
+              "region": [
+                850,
+                209,
+                873,
+                823
+              ],
+              "timeout": 3000.0,
+              "poll_interval": 3.0,
+              "confidence": 0.98,
+              "seconds": 1.0
+            }
+          },
+          {
+            "id": "s_click_chrome_input_t1",
+            "type": "click",
+            "name": "点击Chrome输入框",
+            "enabled": true,
+            "breakpoint": false,
+            "params": {
+              "position": {
+                "type": "variable",
+                "var": "match_pos"
+              },
+              "button": "left",
+              "clicks": 2
+            }
+          },
+          {
+            "id": "s_paste_t1_chrome",
             "type": "paste",
-            "name": "粘贴第一个模板",
+            "name": "Chrome粘贴第一个模板",
             "enabled": true,
             "breakpoint": false,
             "params": {
@@ -375,9 +753,9 @@
             }
           },
           {
-            "id": "s_find_submit1",
+            "id": "s_find_submit_t1_chrome",
             "type": "find_image",
-            "name": "查找发送按钮",
+            "name": "Chrome查找发送按钮",
             "enabled": true,
             "breakpoint": false,
             "params": {
@@ -392,18 +770,18 @@
             }
           },
           {
-            "id": "s_if_send1",
+            "id": "s_if_send_t1_chrome",
             "type": "if",
-            "name": "能否发送",
+            "name": "Chrome能否发送T1",
             "enabled": true,
             "breakpoint": false,
             "params": {
               "condition": "found == True",
               "then": [
                 {
-                  "id": "s_click_send1",
+                  "id": "s_click_send_t1_chrome",
                   "type": "click",
-                  "name": "点击发送",
+                  "name": "Chrome点击发送T1",
                   "enabled": true,
                   "breakpoint": false,
                   "params": {
@@ -416,101 +794,26 @@
                   }
                 },
                 {
-                  "id": "s_wait_busy1",
-                  "type": "wait",
-                  "name": "等一下看是否出现busy",
-                  "enabled": true,
-                  "breakpoint": false,
-                  "params": {"mode": "fixed", "seconds": 2}
-                },
-                {
-                  "id": "s_find_busy1",
-                  "type": "find_image",
-                  "name": "查找busy图标",
-                  "enabled": true,
-                  "breakpoint": false,
-                  "params": {"template": "busy", "region": null, "confidence": null}
-                },
-                {
-                  "id": "s_if_busy1",
-                  "type": "if",
-                  "name": "服务器是否繁忙",
-                  "enabled": true,
-                  "breakpoint": false,
-                  "params": {
-                    "condition": "found == True",
-                    "then": [
-                      {
-                        "id": "s_click_busy1",
-                        "type": "click",
-                        "name": "点击busy图标",
-                        "enabled": true,
-                        "breakpoint": false,
-                        "params": {"position": {"type": "variable", "var": "match_pos"}, "button": "left", "clicks": 1}
-                      },
-                      {"id": "s_wait_busy1b", "type": "wait", "name": "等3秒", "enabled": true, "breakpoint": false, "params": {"mode": "fixed", "seconds": 3}},
-                      {"id": "s_find_busy1b", "type": "find_image", "name": "再查busy", "enabled": true, "breakpoint": false, "params": {"template": "busy", "region": null, "confidence": null}},
-                      {
-                        "id": "s_if_busy1b",
-                        "type": "if",
-                        "name": "busy还在吗",
-                        "enabled": true,
-                        "breakpoint": false,
-                        "params": {
-                          "condition": "found == True",
-                          "then": [
-                            {"id": "s_click_busy1b", "type": "click", "name": "再点busy", "enabled": true, "breakpoint": false, "params": {"position": {"type": "variable", "var": "match_pos"}, "button": "left", "clicks": 1}},
-                            {"id": "s_wait_busy1c", "type": "wait", "name": "再等3秒", "enabled": true, "breakpoint": false, "params": {"mode": "fixed", "seconds": 3}},
-                            {"id": "s_find_busy1c", "type": "find_image", "name": "再查busy", "enabled": true, "breakpoint": false, "params": {"template": "busy", "region": null, "confidence": null}},
-                            {
-                              "id": "s_if_busy1c",
-                              "type": "if",
-                              "name": "busy还在吗",
-                              "enabled": true,
-                              "breakpoint": false,
-                              "params": {
-                                "condition": "found == True",
-                                "then": [
-                                  {"id": "s_click_busy1c", "type": "click", "name": "再点busy", "enabled": true, "breakpoint": false, "params": {"position": {"type": "variable", "var": "match_pos"}, "button": "left", "clicks": 1}},
-                                  {"id": "s_wait_busy1d", "type": "wait", "name": "再等3秒", "enabled": true, "breakpoint": false, "params": {"mode": "fixed", "seconds": 3}},
-                                  {"id": "s_find_busy1d", "type": "find_image", "name": "再查busy", "enabled": true, "breakpoint": false, "params": {"template": "busy", "region": null, "confidence": null}},
-                                  {
-                                    "id": "s_if_busy1d",
-                                    "type": "if",
-                                    "name": "busy还在吗",
-                                    "enabled": true,
-                                    "breakpoint": false,
-                                    "params": {
-                                      "condition": "found == True",
-                                      "then": [
-                                        {"id": "s_click_busy1d", "type": "click", "name": "再点busy", "enabled": true, "breakpoint": false, "params": {"position": {"type": "variable", "var": "match_pos"}, "button": "left", "clicks": 1}},
-                                        {"id": "s_wait_busy1e", "type": "wait", "name": "再等3秒", "enabled": true, "breakpoint": false, "params": {"mode": "fixed", "seconds": 3}}
-                                      ],
-                                      "else": []
-                                    }
-                                  }
-                                ],
-                                "else": []
-                              }
-                            }
-                          ],
-                          "else": []
-                        }
-                      }
-                    ],
-                    "else": []
-                  }
-                }
-              ],
-              "else": [
-                {
-                  "id": "s_log_nosubmit1",
+                  "id": "s_log_t1_chrome_started",
                   "type": "log",
                   "name": "日志",
                   "enabled": true,
                   "breakpoint": false,
                   "params": {
-                    "message": "发送按钮不可用，跳过",
+                    "message": "Chrome: ${item} 模板1已开始运行",
+                    "level": "info"
+                  }
+                }
+              ],
+              "else": [
+                {
+                  "id": "s_log_t1_chrome_nosubmit",
+                  "type": "log",
+                  "name": "日志",
+                  "enabled": true,
+                  "breakpoint": false,
+                  "params": {
+                    "message": "Chrome发送按钮不可用，跳过",
                     "level": "warning"
                   }
                 }
@@ -518,9 +821,321 @@
             }
           },
           {
-            "id": "s_wait_reply1",
+            "id": "s_find_edge_taskbar_t1",
+            "type": "find_image",
+            "name": "查找Edge图标",
+            "enabled": true,
+            "breakpoint": false,
+            "params": {
+              "template": "edge",
+              "region": [
+                1,
+                1035,
+                1561,
+                44
+              ],
+              "confidence": null
+            }
+          },
+          {
+            "id": "s_if_edge_taskbar_t1",
+            "type": "if",
+            "name": "Edge是否在任务栏",
+            "enabled": true,
+            "breakpoint": false,
+            "params": {
+              "condition": "found == True",
+              "then": [
+                {
+                  "id": "s_click_edge_taskbar_t1",
+                  "type": "click",
+                  "name": "点击Edge图标",
+                  "enabled": true,
+                  "breakpoint": false,
+                  "params": {
+                    "position": {
+                      "type": "variable",
+                      "var": "match_pos"
+                    },
+                    "button": "left",
+                    "clicks": 1
+                  }
+                }
+              ],
+              "else": [
+                {
+                  "id": "s_log_no_edge_t1",
+                  "type": "log",
+                  "name": "日志",
+                  "enabled": true,
+                  "breakpoint": false,
+                  "params": {
+                    "message": "没有找到Edge图标",
+                    "level": "warning"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "id": "s_wait_edge_switch_t1",
             "type": "wait",
-            "name": "等待DeepSeek回复完成",
+            "name": "等Edge切换",
+            "enabled": true,
+            "breakpoint": false,
+            "params": {
+              "mode": "fixed",
+              "seconds": 2
+            }
+          },
+          {
+            "id": "s_find_edge_ds_tab_t1",
+            "type": "find_image",
+            "name": "查找Edge中deepseek标签页",
+            "enabled": true,
+            "breakpoint": false,
+            "params": {
+              "template": "newdeepseekedgeicon",
+              "region": [
+                5,
+                3,
+                1055,
+                38
+              ],
+              "confidence": null
+            }
+          },
+          {
+            "id": "s_if_edge_ds_tab_t1",
+            "type": "if",
+            "name": "Edge中deepseek是否存在",
+            "enabled": true,
+            "breakpoint": false,
+            "params": {
+              "condition": "found == True",
+              "then": [
+                {
+                  "id": "s_click_edge_ds_tab_t1",
+                  "type": "click",
+                  "name": "点击Edge中deepseek标签页",
+                  "enabled": true,
+                  "breakpoint": false,
+                  "params": {
+                    "position": {
+                      "type": "variable",
+                      "var": "match_pos"
+                    },
+                    "button": "left",
+                    "clicks": 1
+                  }
+                }
+              ],
+              "else": []
+            }
+          },
+          {
+            "id": "s_wait_edge_ds_t1",
+            "type": "wait",
+            "name": "等Edge DeepSeek加载",
+            "enabled": true,
+            "breakpoint": false,
+            "params": {
+              "mode": "fixed",
+              "seconds": 2
+            }
+          },
+          {
+            "id": "s_c4c3767e",
+            "type": "wait",
+            "name": "等待回复完成",
+            "enabled": true,
+            "breakpoint": false,
+            "params": {
+              "mode": "until_image",
+              "template": "submit",
+              "region": [
+                850,
+                209,
+                873,
+                823
+              ],
+              "timeout": 3000.0,
+              "poll_interval": 3.0,
+              "confidence": 0.98,
+              "seconds": 1.0
+            }
+          },
+          {
+            "id": "s_find_edge_input_t1",
+            "type": "find_image",
+            "name": "查找Edge输入框",
+            "enabled": true,
+            "breakpoint": false,
+            "params": {
+              "template": "inputBox",
+              "region": [
+                282,
+                116,
+                1637,
+                916
+              ],
+              "confidence": 0.4
+            }
+          },
+          {
+            "id": "s_click_edge_input_t1",
+            "type": "click",
+            "name": "点击Edge输入框",
+            "enabled": true,
+            "breakpoint": false,
+            "params": {
+              "position": {
+                "type": "variable",
+                "var": "match_pos"
+              },
+              "button": "left",
+              "clicks": 2
+            }
+          },
+          {
+            "id": "s_paste_t1_edge",
+            "type": "paste",
+            "name": "Edge粘贴第一个模板",
+            "enabled": true,
+            "breakpoint": false,
+            "params": {
+              "text": "${item}全面分析这支股票，从以下这些方面分析，不少于1000字，不要瞎编\n\n公司定位与业务概览：使用表格介绍公司主营业务和市场竞争地位，和同业公司对比优势在哪。\n\n投资亮点分析：列举公司核心竞争优势和护城河。\n\n潜在风险提示：分析公司面临的财务、经营和市场风险。\n\n财务健康状况：评估公司的盈利能力、现金流，归母净利润，扣非净利润和资产负债情况。\n\n估值水平分析：对比同业公司，判断估值合理性，尤其是企业的市销率，市净率，市盈率，机构态度与市场认知等等。",
+              "delay_after_copy": 0.2
+            }
+          },
+          {
+            "id": "s_find_submit_t1_edge",
+            "type": "find_image",
+            "name": "Edge查找发送按钮",
+            "enabled": true,
+            "breakpoint": false,
+            "params": {
+              "template": "submit",
+              "region": [
+                825,
+                197,
+                1094,
+                827
+              ],
+              "confidence": 0.98
+            }
+          },
+          {
+            "id": "s_if_send_t1_edge",
+            "type": "if",
+            "name": "Edge能否发送T1",
+            "enabled": true,
+            "breakpoint": false,
+            "params": {
+              "condition": "found == True",
+              "then": [
+                {
+                  "id": "s_click_send_t1_edge",
+                  "type": "click",
+                  "name": "Edge点击发送T1",
+                  "enabled": true,
+                  "breakpoint": false,
+                  "params": {
+                    "position": {
+                      "type": "variable",
+                      "var": "match_pos"
+                    },
+                    "button": "left",
+                    "clicks": 1
+                  }
+                },
+                {
+                  "id": "s_log_t1_edge_started",
+                  "type": "log",
+                  "name": "日志",
+                  "enabled": true,
+                  "breakpoint": false,
+                  "params": {
+                    "message": "Edge: ${item} 模板1已开始运行",
+                    "level": "info"
+                  }
+                }
+              ],
+              "else": [
+                {
+                  "id": "s_log_t1_edge_nosubmit",
+                  "type": "log",
+                  "name": "日志",
+                  "enabled": true,
+                  "breakpoint": false,
+                  "params": {
+                    "message": "Edge发送按钮不可用，跳过",
+                    "level": "warning"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "id": "s_find_chrome_taskbar_wait_t1",
+            "type": "find_image",
+            "name": "查找Chrome图标",
+            "enabled": true,
+            "breakpoint": false,
+            "params": {
+              "template": "googlechrome",
+              "region": [
+                5,
+                1034,
+                1592,
+                45
+              ],
+              "confidence": null
+            }
+          },
+          {
+            "id": "s_if_chrome_taskbar_wait_t1",
+            "type": "if",
+            "name": "Chrome是否在任务栏",
+            "enabled": true,
+            "breakpoint": false,
+            "params": {
+              "condition": "found == True",
+              "then": [
+                {
+                  "id": "s_click_chrome_taskbar_wait_t1",
+                  "type": "click",
+                  "name": "点击Chrome图标",
+                  "enabled": true,
+                  "breakpoint": false,
+                  "params": {
+                    "position": {
+                      "type": "variable",
+                      "var": "match_pos"
+                    },
+                    "button": "left",
+                    "clicks": 1
+                  }
+                }
+              ],
+              "else": []
+            }
+          },
+          {
+            "id": "s_wait_chrome_switch_t1",
+            "type": "wait",
+            "name": "等Chrome切换",
+            "enabled": true,
+            "breakpoint": false,
+            "params": {
+              "mode": "fixed",
+              "seconds": 2
+            }
+          },
+          {
+            "id": "s_wait_chrome_t1_reply",
+            "type": "wait",
+            "name": "等待Chrome模板1回复完成",
             "enabled": true,
             "breakpoint": false,
             "params": {
@@ -539,9 +1154,111 @@
             }
           },
           {
-            "id": "s_paste_t2",
+            "id": "s_while_busy_chrome_t1",
+            "type": "while_loop",
+            "name": "检查Chrome是否繁忙",
+            "enabled": true,
+            "breakpoint": false,
+            "params": {
+              "condition": "found == True",
+              "max_iterations": 60,
+              "interval_sec": 10.0,
+              "body": [
+                {
+                  "id": "s_find_busy_chrome_t1",
+                  "type": "find_image",
+                  "name": "查找Chrome繁忙图标",
+                  "enabled": true,
+                  "breakpoint": false,
+                  "params": {
+                    "template": "busy",
+                    "region": [
+                      556,
+                      712,
+                      1045,
+                      228
+                    ],
+                    "confidence": null
+                  }
+                },
+                {
+                  "id": "s_if_busy_chrome_t1",
+                  "type": "if",
+                  "name": "Chrome是否繁忙",
+                  "enabled": true,
+                  "breakpoint": false,
+                  "params": {
+                    "condition": "found == True",
+                    "then": [
+                      {
+                        "id": "s_click_busy_chrome_t1",
+                        "type": "click",
+                        "name": "点击Chrome繁忙图标",
+                        "enabled": true,
+                        "breakpoint": false,
+                        "params": {
+                          "position": {
+                            "type": "variable",
+                            "var": "match_pos"
+                          },
+                          "button": "left",
+                          "clicks": 1
+                        }
+                      },
+                      {
+                        "id": "s_log_busy_chrome_t1",
+                        "type": "log",
+                        "name": "日志",
+                        "enabled": true,
+                        "breakpoint": false,
+                        "params": {
+                          "message": "Chrome服务器繁忙，已点击，等待10秒后重试",
+                          "level": "info"
+                        }
+                      }
+                    ],
+                    "else": []
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "id": "s_find_chrome_input_t2",
+            "type": "find_image",
+            "name": "查找Chrome输入框",
+            "enabled": true,
+            "breakpoint": false,
+            "params": {
+              "template": "inputBox",
+              "region": [
+                404,
+                204,
+                1354,
+                837
+              ],
+              "confidence": 0.4
+            }
+          },
+          {
+            "id": "s_click_chrome_input_t2",
+            "type": "click",
+            "name": "点击Chrome输入框",
+            "enabled": true,
+            "breakpoint": false,
+            "params": {
+              "position": {
+                "type": "variable",
+                "var": "match_pos"
+              },
+              "button": "left",
+              "clicks": 2
+            }
+          },
+          {
+            "id": "s_paste_t2_chrome",
             "type": "paste",
-            "name": "粘贴第二个模板",
+            "name": "Chrome粘贴第二个模板",
             "enabled": true,
             "breakpoint": false,
             "params": {
@@ -550,9 +1267,9 @@
             }
           },
           {
-            "id": "s_find_submit2",
+            "id": "s_find_submit_t2_chrome",
             "type": "find_image",
-            "name": "查找发送按钮",
+            "name": "Chrome查找发送按钮",
             "enabled": true,
             "breakpoint": false,
             "params": {
@@ -567,18 +1284,18 @@
             }
           },
           {
-            "id": "s_if_send2",
+            "id": "s_if_send_t2_chrome",
             "type": "if",
-            "name": "能否发送",
+            "name": "Chrome能否发送T2",
             "enabled": true,
             "breakpoint": false,
             "params": {
               "condition": "found == True",
               "then": [
                 {
-                  "id": "s_click_send2",
+                  "id": "s_click_send_t2_chrome",
                   "type": "click",
-                  "name": "点击发送",
+                  "name": "Chrome点击发送T2",
                   "enabled": true,
                   "breakpoint": false,
                   "params": {
@@ -591,101 +1308,26 @@
                   }
                 },
                 {
-                  "id": "s_wait_busy2",
-                  "type": "wait",
-                  "name": "等一下看是否出现busy",
-                  "enabled": true,
-                  "breakpoint": false,
-                  "params": {"mode": "fixed", "seconds": 2}
-                },
-                {
-                  "id": "s_find_busy2",
-                  "type": "find_image",
-                  "name": "查找busy图标",
-                  "enabled": true,
-                  "breakpoint": false,
-                  "params": {"template": "busy", "region": null, "confidence": null}
-                },
-                {
-                  "id": "s_if_busy2",
-                  "type": "if",
-                  "name": "服务器是否繁忙",
-                  "enabled": true,
-                  "breakpoint": false,
-                  "params": {
-                    "condition": "found == True",
-                    "then": [
-                      {
-                        "id": "s_click_busy2",
-                        "type": "click",
-                        "name": "点击busy图标",
-                        "enabled": true,
-                        "breakpoint": false,
-                        "params": {"position": {"type": "variable", "var": "match_pos"}, "button": "left", "clicks": 1}
-                      },
-                      {"id": "s_wait_busy2b", "type": "wait", "name": "等3秒", "enabled": true, "breakpoint": false, "params": {"mode": "fixed", "seconds": 3}},
-                      {"id": "s_find_busy2b", "type": "find_image", "name": "再查busy", "enabled": true, "breakpoint": false, "params": {"template": "busy", "region": null, "confidence": null}},
-                      {
-                        "id": "s_if_busy2b",
-                        "type": "if",
-                        "name": "busy还在吗",
-                        "enabled": true,
-                        "breakpoint": false,
-                        "params": {
-                          "condition": "found == True",
-                          "then": [
-                            {"id": "s_click_busy2b", "type": "click", "name": "再点busy", "enabled": true, "breakpoint": false, "params": {"position": {"type": "variable", "var": "match_pos"}, "button": "left", "clicks": 1}},
-                            {"id": "s_wait_busy2c", "type": "wait", "name": "再等3秒", "enabled": true, "breakpoint": false, "params": {"mode": "fixed", "seconds": 3}},
-                            {"id": "s_find_busy2c", "type": "find_image", "name": "再查busy", "enabled": true, "breakpoint": false, "params": {"template": "busy", "region": null, "confidence": null}},
-                            {
-                              "id": "s_if_busy2c",
-                              "type": "if",
-                              "name": "busy还在吗",
-                              "enabled": true,
-                              "breakpoint": false,
-                              "params": {
-                                "condition": "found == True",
-                                "then": [
-                                  {"id": "s_click_busy2c", "type": "click", "name": "再点busy", "enabled": true, "breakpoint": false, "params": {"position": {"type": "variable", "var": "match_pos"}, "button": "left", "clicks": 1}},
-                                  {"id": "s_wait_busy2d", "type": "wait", "name": "再等3秒", "enabled": true, "breakpoint": false, "params": {"mode": "fixed", "seconds": 3}},
-                                  {"id": "s_find_busy2d", "type": "find_image", "name": "再查busy", "enabled": true, "breakpoint": false, "params": {"template": "busy", "region": null, "confidence": null}},
-                                  {
-                                    "id": "s_if_busy2d",
-                                    "type": "if",
-                                    "name": "busy还在吗",
-                                    "enabled": true,
-                                    "breakpoint": false,
-                                    "params": {
-                                      "condition": "found == True",
-                                      "then": [
-                                        {"id": "s_click_busy2d", "type": "click", "name": "再点busy", "enabled": true, "breakpoint": false, "params": {"position": {"type": "variable", "var": "match_pos"}, "button": "left", "clicks": 1}},
-                                        {"id": "s_wait_busy2e", "type": "wait", "name": "再等3秒", "enabled": true, "breakpoint": false, "params": {"mode": "fixed", "seconds": 3}}
-                                      ],
-                                      "else": []
-                                    }
-                                  }
-                                ],
-                                "else": []
-                              }
-                            }
-                          ],
-                          "else": []
-                        }
-                      }
-                    ],
-                    "else": []
-                  }
-                }
-              ],
-              "else": [
-                {
-                  "id": "s_log_nosubmit2",
+                  "id": "s_log_t2_chrome_started",
                   "type": "log",
                   "name": "日志",
                   "enabled": true,
                   "breakpoint": false,
                   "params": {
-                    "message": "发送按钮不可用，跳过",
+                    "message": "Chrome: ${item} 模板2已开始运行",
+                    "level": "info"
+                  }
+                }
+              ],
+              "else": [
+                {
+                  "id": "s_log_t2_chrome_nosubmit",
+                  "type": "log",
+                  "name": "日志",
+                  "enabled": true,
+                  "breakpoint": false,
+                  "params": {
+                    "message": "Chrome发送按钮不可用，跳过",
                     "level": "warning"
                   }
                 }
@@ -693,19 +1335,131 @@
             }
           },
           {
-            "id": "s_wait_reply2",
+            "id": "s_find_edge_taskbar_wait_t1",
+            "type": "find_image",
+            "name": "查找Edge图标",
+            "enabled": true,
+            "breakpoint": false,
+            "params": {
+              "template": "edge",
+              "region": [
+                17,
+                1034,
+                1668,
+                45
+              ],
+              "confidence": null
+            }
+          },
+          {
+            "id": "s_if_edge_taskbar_wait_t1",
+            "type": "if",
+            "name": "Edge是否在任务栏",
+            "enabled": true,
+            "breakpoint": false,
+            "params": {
+              "condition": "found == True",
+              "then": [
+                {
+                  "id": "s_click_edge_taskbar_wait_t1",
+                  "type": "click",
+                  "name": "点击Edge图标",
+                  "enabled": true,
+                  "breakpoint": false,
+                  "params": {
+                    "position": {
+                      "type": "variable",
+                      "var": "match_pos"
+                    },
+                    "button": "left",
+                    "clicks": 1
+                  }
+                }
+              ],
+              "else": []
+            }
+          },
+          {
+            "id": "s_wait_edge_switch_wait_t1",
             "type": "wait",
-            "name": "等待DeepSeek回复完成",
+            "name": "等Edge切换",
+            "enabled": true,
+            "breakpoint": false,
+            "params": {
+              "mode": "fixed",
+              "seconds": 2
+            }
+          },
+          {
+            "id": "s_find_edge_ds_tab_wait_t1",
+            "type": "find_image",
+            "name": "查找Edge中deepseek标签页",
+            "enabled": true,
+            "breakpoint": false,
+            "params": {
+              "template": "deepseekedgeicon",
+              "region": [
+                5,
+                2,
+                1071,
+                44
+              ],
+              "confidence": null
+            }
+          },
+          {
+            "id": "s_if_edge_ds_tab_wait_t1",
+            "type": "if",
+            "name": "Edge中deepseek是否存在",
+            "enabled": true,
+            "breakpoint": false,
+            "params": {
+              "condition": "found == True",
+              "then": [
+                {
+                  "id": "s_click_edge_ds_tab_wait_t1",
+                  "type": "click",
+                  "name": "点击Edge中deepseek标签页",
+                  "enabled": true,
+                  "breakpoint": false,
+                  "params": {
+                    "position": {
+                      "type": "variable",
+                      "var": "match_pos"
+                    },
+                    "button": "left",
+                    "clicks": 1
+                  }
+                }
+              ],
+              "else": []
+            }
+          },
+          {
+            "id": "s_wait_edge_ds_wait_t1",
+            "type": "wait",
+            "name": "等Edge DeepSeek加载",
+            "enabled": true,
+            "breakpoint": false,
+            "params": {
+              "mode": "fixed",
+              "seconds": 2
+            }
+          },
+          {
+            "id": "s_wait_edge_t1_reply",
+            "type": "wait",
+            "name": "等待Edge模板1回复完成",
             "enabled": true,
             "breakpoint": false,
             "params": {
               "mode": "until_image",
               "template": "submit",
               "region": [
-                788,
-                178,
-                930,
-                847
+                736,
+                315,
+                969,
+                712
               ],
               "timeout": 300.0,
               "poll_interval": 3.0,
@@ -714,13 +1468,432 @@
             }
           },
           {
-            "id": "s_log_done",
-            "type": "log",
-            "name": "记录完成",
+            "id": "s_while_busy_edge_t1",
+            "type": "while_loop",
+            "name": "检查Edge是否繁忙",
             "enabled": true,
             "breakpoint": false,
             "params": {
-              "message": "${item} 分析完成",
+              "condition": "found == True",
+              "max_iterations": 60,
+              "interval_sec": 10.0,
+              "body": [
+                {
+                  "id": "s_find_busy_edge_t1",
+                  "type": "find_image",
+                  "name": "查找Edge繁忙图标",
+                  "enabled": true,
+                  "breakpoint": false,
+                  "params": {
+                    "template": "busy",
+                    "region": [
+                      546,
+                      686,
+                      1111,
+                      251
+                    ],
+                    "confidence": null
+                  }
+                },
+                {
+                  "id": "s_if_busy_edge_t1",
+                  "type": "if",
+                  "name": "Edge是否繁忙",
+                  "enabled": true,
+                  "breakpoint": false,
+                  "params": {
+                    "condition": "found == True",
+                    "then": [
+                      {
+                        "id": "s_click_busy_edge_t1",
+                        "type": "click",
+                        "name": "点击Edge繁忙图标",
+                        "enabled": true,
+                        "breakpoint": false,
+                        "params": {
+                          "position": {
+                            "type": "variable",
+                            "var": "match_pos"
+                          },
+                          "button": "left",
+                          "clicks": 1
+                        }
+                      },
+                      {
+                        "id": "s_log_busy_edge_t1",
+                        "type": "log",
+                        "name": "日志",
+                        "enabled": true,
+                        "breakpoint": false,
+                        "params": {
+                          "message": "Edge服务器繁忙，已点击，等待10秒后重试",
+                          "level": "info"
+                        }
+                      }
+                    ],
+                    "else": []
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "id": "s_find_edge_input_t2",
+            "type": "find_image",
+            "name": "查找Edge输入框",
+            "enabled": true,
+            "breakpoint": false,
+            "params": {
+              "template": "inputBox",
+              "region": [
+                503,
+                126,
+                1346,
+                905
+              ],
+              "confidence": 0.4
+            }
+          },
+          {
+            "id": "s_click_edge_input_t2",
+            "type": "click",
+            "name": "点击Edge输入框",
+            "enabled": true,
+            "breakpoint": false,
+            "params": {
+              "position": {
+                "type": "variable",
+                "var": "match_pos"
+              },
+              "button": "left",
+              "clicks": 2
+            }
+          },
+          {
+            "id": "s_paste_t2_edge",
+            "type": "paste",
+            "name": "Edge粘贴第二个模板",
+            "enabled": true,
+            "breakpoint": false,
+            "params": {
+              "text": "那适合4%网格吗？根据最新的国际国内市场信息和客观的事实数据分析，不要瞎编，不要偷懒，不少于2000字，仔细地多维度分析和以表格形式做输出，总结的维度和权重参考如下\n\n维度（权重）\t得分\t加权得分\t详细依据\n波动性与触发频率（20%）\t/100\t\t\n基本面与估值安全垫（25%）\t/100\t\t\n尾部与方向风险（25%）\t/100\t\t\n流动性（15%）\t/100\t\t\n融资盘风险（7%）\t/100\t\t\n机构覆盖（8%）\t/100\t\t\n加权总分\t\t/100",
+              "delay_after_copy": 0.2
+            }
+          },
+          {
+            "id": "s_find_submit_t2_edge",
+            "type": "find_image",
+            "name": "Edge查找发送按钮",
+            "enabled": true,
+            "breakpoint": false,
+            "params": {
+              "template": "submit",
+              "region": [
+                412,
+                119,
+                1503,
+                912
+              ],
+              "confidence": 0.98
+            }
+          },
+          {
+            "id": "s_if_send_t2_edge",
+            "type": "if",
+            "name": "Edge能否发送T2",
+            "enabled": true,
+            "breakpoint": false,
+            "params": {
+              "condition": "found == True",
+              "then": [
+                {
+                  "id": "s_click_send_t2_edge",
+                  "type": "click",
+                  "name": "Edge点击发送T2",
+                  "enabled": true,
+                  "breakpoint": false,
+                  "params": {
+                    "position": {
+                      "type": "variable",
+                      "var": "match_pos"
+                    },
+                    "button": "left",
+                    "clicks": 1
+                  }
+                },
+                {
+                  "id": "s_log_t2_edge_started",
+                  "type": "log",
+                  "name": "日志",
+                  "enabled": true,
+                  "breakpoint": false,
+                  "params": {
+                    "message": "Edge: ${item} 模板2已开始运行",
+                    "level": "info"
+                  }
+                }
+              ],
+              "else": [
+                {
+                  "id": "s_log_t2_edge_nosubmit",
+                  "type": "log",
+                  "name": "日志",
+                  "enabled": true,
+                  "breakpoint": false,
+                  "params": {
+                    "message": "Edge发送按钮不可用，跳过",
+                    "level": "warning"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "id": "s_wait_edge_t2_reply",
+            "type": "wait",
+            "name": "等待Edge模板2回复完成",
+            "enabled": true,
+            "breakpoint": false,
+            "params": {
+              "mode": "until_image",
+              "template": "submit",
+              "region": [
+                891,
+                256,
+                739,
+                760
+              ],
+              "timeout": 300.0,
+              "poll_interval": 3.0,
+              "confidence": 0.98,
+              "seconds": 1.0
+            }
+          },
+          {
+            "id": "s_while_busy_edge_t2",
+            "type": "while_loop",
+            "name": "检查Edge是否繁忙",
+            "enabled": true,
+            "breakpoint": false,
+            "params": {
+              "condition": "found == True",
+              "max_iterations": 60,
+              "interval_sec": 10.0,
+              "body": [
+                {
+                  "id": "s_find_busy_edge_t2",
+                  "type": "find_image",
+                  "name": "查找Edge繁忙图标",
+                  "enabled": true,
+                  "breakpoint": false,
+                  "params": {
+                    "template": "busy",
+                    "region": [
+                      606,
+                      707,
+                      1039,
+                      216
+                    ],
+                    "confidence": null
+                  }
+                },
+                {
+                  "id": "s_if_busy_edge_t2",
+                  "type": "if",
+                  "name": "Edge是否繁忙",
+                  "enabled": true,
+                  "breakpoint": false,
+                  "params": {
+                    "condition": "found == True",
+                    "then": [
+                      {
+                        "id": "s_click_busy_edge_t2",
+                        "type": "click",
+                        "name": "点击Edge繁忙图标",
+                        "enabled": true,
+                        "breakpoint": false,
+                        "params": {
+                          "position": {
+                            "type": "variable",
+                            "var": "match_pos"
+                          },
+                          "button": "left",
+                          "clicks": 1
+                        }
+                      },
+                      {
+                        "id": "s_log_busy_edge_t2",
+                        "type": "log",
+                        "name": "日志",
+                        "enabled": true,
+                        "breakpoint": false,
+                        "params": {
+                          "message": "Edge服务器繁忙，已点击，等待10秒后重试",
+                          "level": "info"
+                        }
+                      }
+                    ],
+                    "else": []
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "id": "s_find_chrome_taskbar_t2_wait",
+            "type": "find_image",
+            "name": "查找Chrome图标",
+            "enabled": true,
+            "breakpoint": false,
+            "params": {
+              "template": "googlechrome",
+              "region": [
+                5,
+                1034,
+                1592,
+                45
+              ],
+              "confidence": null
+            }
+          },
+          {
+            "id": "s_if_chrome_taskbar_t2_wait",
+            "type": "if",
+            "name": "Chrome是否在任务栏",
+            "enabled": true,
+            "breakpoint": false,
+            "params": {
+              "condition": "found == True",
+              "then": [
+                {
+                  "id": "s_click_chrome_taskbar_t2_wait",
+                  "type": "click",
+                  "name": "点击Chrome图标",
+                  "enabled": true,
+                  "breakpoint": false,
+                  "params": {
+                    "position": {
+                      "type": "variable",
+                      "var": "match_pos"
+                    },
+                    "button": "left",
+                    "clicks": 1
+                  }
+                }
+              ],
+              "else": []
+            }
+          },
+          {
+            "id": "s_wait_chrome_switch_t2_wait",
+            "type": "wait",
+            "name": "等Chrome切换",
+            "enabled": true,
+            "breakpoint": false,
+            "params": {
+              "mode": "fixed",
+              "seconds": 2
+            }
+          },
+          {
+            "id": "s_wait_chrome_t2_reply",
+            "type": "wait",
+            "name": "等待Chrome模板2回复完成",
+            "enabled": true,
+            "breakpoint": false,
+            "params": {
+              "mode": "until_image",
+              "template": "submit",
+              "region": [
+                850,
+                209,
+                873,
+                823
+              ],
+              "timeout": 300.0,
+              "poll_interval": 3.0,
+              "confidence": 0.98,
+              "seconds": 1.0
+            }
+          },
+          {
+            "id": "s_while_busy_chrome_t2",
+            "type": "while_loop",
+            "name": "检查Chrome是否繁忙",
+            "enabled": true,
+            "breakpoint": false,
+            "params": {
+              "condition": "found == True",
+              "max_iterations": 60,
+              "interval_sec": 10.0,
+              "body": [
+                {
+                  "id": "s_find_busy_chrome_t2",
+                  "type": "find_image",
+                  "name": "查找Chrome繁忙图标",
+                  "enabled": true,
+                  "breakpoint": false,
+                  "params": {
+                    "template": "busy",
+                    "region": [
+                      622,
+                      705,
+                      914,
+                      230
+                    ],
+                    "confidence": null
+                  }
+                },
+                {
+                  "id": "s_if_busy_chrome_t2",
+                  "type": "if",
+                  "name": "Chrome是否繁忙",
+                  "enabled": true,
+                  "breakpoint": false,
+                  "params": {
+                    "condition": "found == True",
+                    "then": [
+                      {
+                        "id": "s_click_busy_chrome_t2",
+                        "type": "click",
+                        "name": "点击Chrome繁忙图标",
+                        "enabled": true,
+                        "breakpoint": false,
+                        "params": {
+                          "position": {
+                            "type": "variable",
+                            "var": "match_pos"
+                          },
+                          "button": "left",
+                          "clicks": 1
+                        }
+                      },
+                      {
+                        "id": "s_log_busy_chrome_t2",
+                        "type": "log",
+                        "name": "日志",
+                        "enabled": true,
+                        "breakpoint": false,
+                        "params": {
+                          "message": "Chrome服务器繁忙，已点击，等待10秒后重试",
+                          "level": "info"
+                        }
+                      }
+                    ],
+                    "else": []
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "id": "s_log_company_done",
+            "type": "log",
+            "name": "记录公司完成",
+            "enabled": true,
+            "breakpoint": false,
+            "params": {
+              "message": "${item} 双浏览器分析完成",
               "level": "info"
             }
           }
@@ -757,6 +1930,20 @@
         233,
         53
       ],
+      "default_confidence": 0.7,
+      "match_strategy": "first_hit"
+    },
+    "deepseekedgeicon": {
+      "name": "deepseekedgeicon",
+      "variants": [
+        {
+          "file": "v3.png",
+          "confidence": 0.7,
+          "added_at": "2026-05-28",
+          "note": ""
+        }
+      ],
+      "default_region": null,
       "default_confidence": 0.7,
       "match_strategy": "first_hit"
     },
@@ -857,6 +2044,18 @@
           "confidence": 0.7,
           "added_at": "2026-05-22",
           "note": ""
+        },
+        {
+          "file": "v3.png",
+          "confidence": 0.5,
+          "added_at": "2026-05-29",
+          "note": ""
+        },
+        {
+          "file": "v4.png",
+          "confidence": 0.5,
+          "added_at": "2026-05-29",
+          "note": ""
         }
       ],
       "default_region": [
@@ -935,13 +2134,51 @@
       "name": "busy",
       "variants": [
         {
-          "file": "busy.png",
+          "file": "v2.png",
           "confidence": 0.7,
-          "added_at": "2026-05-27",
+          "added_at": "2026-05-30",
           "note": ""
         }
       ],
       "default_region": null,
+      "default_confidence": 0.7,
+      "match_strategy": "first_hit"
+    },
+    "deepseekedge": {
+      "name": "deepseekedge",
+      "variants": [
+        {
+          "file": "v1.png",
+          "confidence": 0.7,
+          "added_at": "2026-05-28",
+          "note": ""
+        }
+      ],
+      "default_region": [
+        38,
+        7,
+        252,
+        38
+      ],
+      "default_confidence": 0.7,
+      "match_strategy": "first_hit"
+    },
+    "newdeepseekedgeicon": {
+      "name": "newdeepseekedgeicon",
+      "variants": [
+        {
+          "file": "v1.png",
+          "confidence": 0.7,
+          "added_at": "2026-05-28",
+          "note": ""
+        }
+      ],
+      "default_region": [
+        33,
+        7,
+        36,
+        27
+      ],
       "default_confidence": 0.7,
       "match_strategy": "first_hit"
     }

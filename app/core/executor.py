@@ -260,6 +260,8 @@ class WorkflowExecutor(QObject):
         t = step.type
         if t == "loop_data":
             self._run_loop_data(step, depth=depth)
+        elif t == "while_loop":
+            self._run_while_loop(step, depth=depth)
         elif t == "if":
             self._run_if(step, depth=depth)
         elif t == "break":
@@ -311,6 +313,54 @@ class WorkflowExecutor(QObject):
             self.context.current_index = outer_index
             if had_outer_var:
                 self.context.set(item_var, outer_var)
+
+    def _run_while_loop(self, step: Step, depth: int = 0):
+        indent = "  " * depth
+        cond = step.params.get("condition", "")
+        max_iter = int(step.params.get("max_iterations", 100) or 100)
+        interval = float(step.params.get("interval_sec", 1.0) or 1.0)
+        body = step.params.get("body") or []
+
+        if not cond or not cond.strip():
+            self._log("error", f"{indent}while_loop 条件为空，跳过")
+            return
+
+        self._log("info", f"{indent}while_loop 开始: 条件={cond!r}, 最大{max_iter}次, 间隔{interval}s")
+
+        iteration = 0
+        while iteration < max_iter:
+            if self._stop_event.is_set():
+                raise _StopSignal()
+
+            truthy = self._eval_condition(cond)
+            if not truthy:
+                self._log("info", f"{indent}while_loop 条件为假，退出循环 (第{iteration}次检查)")
+                break
+
+            iteration += 1
+            self._log("info", f"{indent}while_loop 第 {iteration}/{max_iter} 次迭代")
+
+            try:
+                self._run_block(body, depth=depth + 1)
+            except _BreakSignal:
+                self._log("info", f"{indent}while_loop: break")
+                break
+            except _ContinueSignal:
+                self._log("info", f"{indent}while_loop: continue → 下一次迭代")
+                # 继续下一次迭代，但在间隔前检查条件
+                if iteration < max_iter and interval > 0:
+                    self._log("info", f"{indent}while_loop 等待 {interval}s")
+                    self._interruptible_sleep(interval)
+                continue
+
+            # 迭代间等待
+            if iteration < max_iter and interval > 0:
+                self._log("info", f"{indent}while_loop 等待 {interval}s")
+                self._interruptible_sleep(interval)
+
+        if iteration >= max_iter:
+            self._log("warning", f"{indent}while_loop 达到最大次数 {max_iter}，自动退出")
+        self._log("info", f"{indent}while_loop 结束 (共执行 {iteration} 次)")
 
     def _run_if(self, step: Step, depth: int = 0):
         indent = "  " * depth
